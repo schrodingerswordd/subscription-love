@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Upload, FileText, Loader2, ArrowLeft, Check, AlertCircle, Sparkles, Plus, Eye,
-  ShieldCheck, ShieldAlert, Shield,
+  ShieldCheck, ShieldAlert, Shield, Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import { formatCurrency, getCategoryMeta } from "@/lib/services";
 import { parseCsv, extractPdfText, extractTransactionsFromText } from "@/lib/scanner/parse";
 import { analyzeStatement } from "@/lib/scanner/analyze.functions";
 import type { RecurringCandidate, RawTransaction } from "@/lib/scanner/types";
+import { useSubscription } from "@/hooks/useSubscription";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/scan")({
