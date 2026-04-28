@@ -2,8 +2,9 @@ import { useEffect } from "react";
 import { createFileRoute, Outlet, useNavigate, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { useSubscription } from "@/hooks/useSubscription";
+import { usePriceAlerts } from "@/hooks/usePriceAlerts";
 import { Button } from "@/components/ui/button";
-import { LogOut, Wallet, Crown } from "lucide-react";
+import { LogOut, Wallet, Crown, Bell } from "lucide-react";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { toast } from "sonner";
 
