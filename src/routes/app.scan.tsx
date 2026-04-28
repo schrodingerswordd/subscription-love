@@ -3,9 +3,11 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Upload, FileText, Loader2, ArrowLeft, Check, AlertCircle, Sparkles, Plus, Eye,
+  ShieldCheck, ShieldAlert, Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { ServiceAvatar } from "@/components/ServiceAvatar";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +52,7 @@ function ScanPage() {
   const [statusMsg, setStatusMsg] = useState<string>("");
   const [candidates, setCandidates] = useState<RecurringCandidate[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [cycleOverrides, setCycleOverrides] = useState<Record<string, RecurringCandidate["cycle"]>>({});
   const [txnCount, setTxnCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
@@ -59,6 +62,7 @@ function ScanPage() {
     setStatusMsg("");
     setCandidates([]);
     setSelected(new Set());
+    setCycleOverrides({});
     setTxnCount(0);
     setError(null);
     if (inputRef.current) inputRef.current.value = "";
@@ -121,8 +125,14 @@ function ScanPage() {
 
       setTxnCount(result.transactionCount);
       setCandidates(result.candidates);
-      // Pre-select all not-yet-tracked
-      setSelected(new Set(result.candidates.filter((c) => !c.alreadyTracked).map((c) => c.name)));
+      // Pre-select high-confidence, not-yet-tracked candidates only
+      setSelected(
+        new Set(
+          result.candidates
+            .filter((c) => !c.alreadyTracked && c.confidence >= 70)
+            .map((c) => c.name),
+        ),
+      );
       setStage("results");
     } catch (e) {
       console.error(e);
@@ -150,7 +160,7 @@ function ScanPage() {
         user_id: user.id,
         name: c.name,
         cost: c.amount,
-        billing_cycle: c.cycle,
+        billing_cycle: cycleOverrides[c.name] ?? c.cycle,
         next_billing_date: today,
         category: c.category,
         status: "active" as const,
@@ -245,23 +255,17 @@ function ScanPage() {
         </div>
       )}
 
-      {/* Results */}
+      {/* Review & confirm */}
       {stage === "results" && (
         <div className="mt-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold">
-                Found <span className="text-primary">{candidates.length}</span> recurring charge
-                {candidates.length === 1 ? "" : "s"}{" "}
-                <span className="text-muted-foreground">
-                  in {txnCount} transaction{txnCount === 1 ? "" : "s"}
-                </span>
+              <h2 className="text-lg font-bold">Review & confirm</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Found <span className="font-semibold text-foreground">{candidates.length}</span> recurring charge
+                {candidates.length === 1 ? "" : "s"} in {txnCount} transaction{txnCount === 1 ? "" : "s"}.
+                {newCount > 0 && ` ${newCount} new — toggle the ones to save.`}
               </p>
-              {newCount > 0 && (
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {newCount} not yet tracked · pre-selected for you
-                </p>
-              )}
             </div>
             <Button variant="outline" size="sm" onClick={reset}>
               Scan another file
@@ -276,54 +280,118 @@ function ScanPage() {
             </div>
           ) : (
             <>
-              <ul className="mt-4 space-y-2">
+              <ul className="mt-4 space-y-3">
                 {candidates.map((c) => {
                   const checked = selected.has(c.name);
                   const cat = getCategoryMeta(c.category);
+                  const cycle = cycleOverrides[c.name] ?? c.cycle;
+                  const conf = c.confidence;
+                  const confTier =
+                    conf >= 75 ? "high" : conf >= 50 ? "medium" : "low";
+                  const ConfIcon =
+                    confTier === "high" ? ShieldCheck : confTier === "medium" ? Shield : ShieldAlert;
+                  const confColor =
+                    confTier === "high"
+                      ? "text-emerald-500"
+                      : confTier === "medium"
+                        ? "text-amber-500"
+                        : "text-destructive";
+                  const progressColor =
+                    confTier === "high"
+                      ? "[&>div]:bg-emerald-500"
+                      : confTier === "medium"
+                        ? "[&>div]:bg-amber-500"
+                        : "[&>div]:bg-destructive";
                   return (
                     <li
                       key={c.name}
                       className={
-                        "rounded-2xl border bg-card p-3 shadow-card-soft transition " +
+                        "rounded-2xl border bg-card p-4 shadow-card-soft transition " +
                         (checked ? "border-primary/60 ring-1 ring-primary/40" : "border-border")
                       }
                     >
-                      <label className="flex cursor-pointer items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggle(c.name)}
-                          disabled={c.alreadyTracked}
-                          className="h-4 w-4 shrink-0 rounded border-border accent-primary"
-                        />
+                      <div className="flex items-start gap-3">
                         <ServiceAvatar name={c.name} size={42} />
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <p className="truncate font-semibold">{c.name}</p>
                             {c.alreadyTracked && (
                               <Badge variant="secondary" className="gap-1 text-xs">
                                 <Check className="h-3 w-3" /> already tracked
                               </Badge>
                             )}
+                            <Badge variant="outline" className={`gap-1 text-xs ${confColor}`}>
+                              <ConfIcon className="h-3 w-3" /> {conf}% confidence
+                            </Badge>
                           </div>
-                          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
                             <span className="inline-flex items-center gap-1">
                               <cat.icon className="h-3 w-3" /> {cat.label}
                             </span>
                             <span>·</span>
                             <span>{c.occurrences} charges</span>
                             <span>·</span>
-                            <span>{c.cycle}</span>
+                            <span>last {c.lastSeen}</span>
                           </div>
                         </div>
                         <div className="text-right">
                           <p className="font-bold tabular-nums">{formatCurrency(c.amount)}</p>
                           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                            / {c.cycle.replace("ly", "")}
+                            / {cycle.replace("ly", "")}
                           </p>
                         </div>
-                      </label>
-                      <details className="mt-2 group">
+                      </div>
+
+                      {/* Confidence bar + reason */}
+                      <div className="mt-3">
+                        <Progress value={conf} className={`h-1.5 ${progressColor}`} />
+                        <p className="mt-1 text-[11px] text-muted-foreground">{c.confidenceReason}</p>
+                      </div>
+
+                      {/* Editable cycle + confirm toggle */}
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                            Cycle:
+                          </span>
+                          {(["weekly", "monthly", "yearly"] as const).map((opt) => (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() =>
+                                setCycleOverrides((prev) => ({ ...prev, [c.name]: opt }))
+                              }
+                              className={
+                                "rounded-md border px-2 py-0.5 text-xs font-medium transition " +
+                                (cycle === opt
+                                  ? "border-primary bg-primary/10 text-primary"
+                                  : "border-border text-muted-foreground hover:text-foreground")
+                              }
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => !c.alreadyTracked && toggle(c.name)}
+                          disabled={c.alreadyTracked}
+                          className={
+                            "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition " +
+                            (c.alreadyTracked
+                              ? "cursor-not-allowed border-border bg-muted text-muted-foreground"
+                              : checked
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-border bg-background hover:border-primary hover:text-primary")
+                          }
+                        >
+                          {checked ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                          {c.alreadyTracked ? "Skipped" : checked ? "Confirmed" : "Confirm"}
+                        </button>
+                      </div>
+
+                      <details className="mt-3 group">
                         <summary className="flex cursor-pointer items-center gap-1 text-xs text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
                           <Eye className="h-3 w-3" /> Show raw descriptor
                         </summary>
