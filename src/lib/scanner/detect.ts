@@ -88,6 +88,30 @@ export function detectRecurring(txns: RawTransaction[]): RecurringCandidate[] {
 
     if (!cycle) continue;
 
+    // Confidence scoring (0–100)
+    // - More occurrences → higher confidence
+    // - Tighter amount consistency → higher confidence
+    // - Gap variance close to expected cycle → higher confidence
+    const consistencyRatio = consistent.length / amounts.length; // 0..1
+    const amountVariance =
+      amounts.reduce((s, a) => s + Math.abs(a - med) / med, 0) / amounts.length; // lower is better
+    const expectedGap = cycle === "weekly" ? 7 : cycle === "monthly" ? 30 : 365;
+    const gapDeviation =
+      gaps.reduce((s, g) => s + Math.abs(g - expectedGap), 0) / gaps.length / expectedGap; // lower better
+
+    const occScore = Math.min(sorted.length / 6, 1) * 40; // up to 40 pts (caps at 6 occurrences)
+    const consistencyScore = consistencyRatio * 25; // up to 25
+    const amountScore = Math.max(0, 1 - amountVariance / 0.15) * 20; // up to 20
+    const gapScore = Math.max(0, 1 - gapDeviation) * 15; // up to 15
+    const confidence = Math.round(occScore + consistencyScore + amountScore + gapScore);
+
+    const confidenceReason =
+      sorted.length >= 4 && amountVariance < 0.05
+        ? "Strong recurring pattern, stable amount"
+        : sorted.length >= 3
+          ? "Repeats consistently"
+          : "Only 2 charges seen — verify before adding";
+
     candidates.push({
       name: key,
       raw: sorted[sorted.length - 1].description,
@@ -97,9 +121,11 @@ export function detectRecurring(txns: RawTransaction[]): RecurringCandidate[] {
       lastSeen: sorted[sorted.length - 1].date,
       category: "other",
       alreadyTracked: false,
+      confidence: Math.max(10, Math.min(100, confidence)),
+      confidenceReason,
     });
   }
 
-  // Sort by amount descending — biggest leeches first.
-  return candidates.sort((a, b) => b.amount - a.amount);
+  // Sort by confidence desc, then by amount desc.
+  return candidates.sort((a, b) => b.confidence - a.confidence || b.amount - a.amount);
 }
