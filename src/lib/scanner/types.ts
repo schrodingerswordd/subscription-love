@@ -26,6 +26,10 @@ export interface RecurringCandidate {
   category: string;
   /** True when this merchant already exists in the user's active subs. */
   alreadyTracked: boolean;
+  /** ID of the matched existing subscription (when alreadyTracked is true). */
+  matchedSubscriptionId?: string;
+  /** Saved cost on the matched subscription, for price-change comparison. */
+  matchedSubscriptionCost?: number;
   /** Detection confidence 0–100 (heuristic-based). */
   confidence: number;
   /** Short human-readable reason for the confidence score. */
