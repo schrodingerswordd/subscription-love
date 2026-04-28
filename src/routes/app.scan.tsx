@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Upload, FileText, Loader2, ArrowLeft, Check, AlertCircle, Sparkles, Plus, Eye,
-  ShieldCheck, ShieldAlert, Shield,
+  ShieldCheck, ShieldAlert, Shield, Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import { formatCurrency, getCategoryMeta } from "@/lib/services";
 import { parseCsv, extractPdfText, extractTransactionsFromText } from "@/lib/scanner/parse";
 import { analyzeStatement } from "@/lib/scanner/analyze.functions";
 import type { RecurringCandidate, RawTransaction } from "@/lib/scanner/types";
+import { useSubscription } from "@/hooks/useSubscription";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/scan")({
@@ -47,6 +48,12 @@ function ScanPage() {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const analyze = useServerFn(analyzeStatement);
+  const { isPremium, loading: subLoading } = useSubscription();
+
+  if (!subLoading && !isPremium) {
+    return <ScanPaywall />;
+  }
+
 
   const [stage, setStage] = useState<Stage>("idle");
   const [statusMsg, setStatusMsg] = useState<string>("");
@@ -422,6 +429,31 @@ function ScanPage() {
           )}
         </div>
       )}
+    </main>
+  );
+}
+
+function ScanPaywall() {
+  return (
+    <main className="mx-auto max-w-md px-4 pt-4">
+      <Link to="/app" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" /> Back
+      </Link>
+      <div className="mt-8 rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-card to-primary/5 p-6 text-center shadow-elegant">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-elegant">
+          <Crown className="h-7 w-7" />
+        </div>
+        <h1 className="mt-4 text-xl font-bold">Bank scanner is a Premium feature</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Upload a statement, let AI find every recurring charge, and add the ones you forgot — in seconds.
+        </p>
+        <Button asChild className="mt-6 w-full bg-gradient-primary hover:opacity-90">
+          <Link to="/pricing">
+            <Crown className="h-4 w-4" /> Upgrade for $2.99/mo
+          </Link>
+        </Button>
+        <p className="mt-3 text-xs text-muted-foreground">Cancel anytime.</p>
+      </div>
     </main>
   );
 }

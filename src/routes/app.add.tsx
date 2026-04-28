@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { SubscriptionForm, type SubscriptionFormValue } from "@/components/SubscriptionForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { getServicePreset } from "@/lib/services";
+import { useSubscription, FREE_SUBSCRIPTION_LIMIT } from "@/hooks/useSubscription";
+import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -26,8 +28,30 @@ export const Route = createFileRoute("/app/add")({
 function AddSub() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isPremium, loading: subLoading } = useSubscription();
   const { preset } = Route.useSearch();
   const [submitting, setSubmitting] = useState(false);
+  const [activeCount, setActiveCount] = useState<number | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { count } = await supabase
+        .from("subscriptions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "active");
+      setActiveCount(count ?? 0);
+    })();
+  }, [user]);
+
+  // Gate: free users blocked at FREE_SUBSCRIPTION_LIMIT
+  useEffect(() => {
+    if (subLoading || activeCount === null) return;
+    if (!isPremium && activeCount >= FREE_SUBSCRIPTION_LIMIT) {
+      setShowUpgrade(true);
+    }
+  }, [subLoading, activeCount, isPremium]);
 
   const presetMatch = preset ? getServicePreset(preset) : undefined;
   const initial = presetMatch
@@ -40,6 +64,10 @@ function AddSub() {
 
   async function handleSubmit(v: SubscriptionFormValue) {
     if (!user) return;
+    if (!isPremium && activeCount !== null && activeCount >= FREE_SUBSCRIPTION_LIMIT) {
+      setShowUpgrade(true);
+      return;
+    }
     setSubmitting(true);
     const { error } = await supabase.from("subscriptions").insert({
       user_id: user.id,
@@ -77,6 +105,16 @@ function AddSub() {
           submitLabel="Add subscription"
         />
       </div>
+
+      <UpgradePrompt
+        open={showUpgrade}
+        onClose={() => {
+          setShowUpgrade(false);
+          navigate({ to: "/app" });
+        }}
+        title="Free plan limit reached"
+        description={`You're tracking ${FREE_SUBSCRIPTION_LIMIT} subscriptions. Upgrade to Premium for unlimited tracking.`}
+      />
     </main>
   );
 }
