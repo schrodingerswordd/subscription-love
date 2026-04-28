@@ -16,6 +16,7 @@ function AppLayout() {
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
   const { isPremium } = useSubscription();
+  const { unreadCount } = usePriceAlerts();
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
