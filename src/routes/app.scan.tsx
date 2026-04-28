@@ -16,6 +16,7 @@ import { parseCsv, extractPdfText, extractTransactionsFromText } from "@/lib/sca
 import { analyzeStatement } from "@/lib/scanner/analyze.functions";
 import type { RecurringCandidate, RawTransaction } from "@/lib/scanner/types";
 import { useSubscription } from "@/hooks/useSubscription";
+import { recordPrice } from "@/lib/price-alerts";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/scan")({
