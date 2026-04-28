@@ -88,7 +88,7 @@ function DebugIcons() {
                     {url ? `${source}: ${url}` : "no slug or domain — falls back to initials"}
                   </p>
                 </div>
-                <StatusPill status={status} hasSlug={!!p.slug} />
+                <StatusPill status={status} hasSlug={!!url} />
 
                 {/* Hidden probe image to detect load success/failure */}
                 {url && (
