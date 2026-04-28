@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Pencil, Trash2, Calendar, Sparkles, Bell, Ban, RotateCcw, PiggyBank, ScanLine, Crown } from "lucide-react";
+import { Plus, Pencil, Trash2, Calendar, Sparkles, Bell, Ban, RotateCcw, PiggyBank, ScanLine, Crown, TrendingUp } from "lucide-react";
 import { useSubscription, FREE_SUBSCRIPTION_LIMIT } from "@/hooks/useSubscription";
+import { usePriceAlerts } from "@/hooks/usePriceAlerts";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -46,6 +47,7 @@ export const Route = createFileRoute("/app/")({
 function Dashboard() {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
+  const { alerts: priceAlerts, unreadCount: priceAlertsUnread } = usePriceAlerts();
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -238,6 +240,31 @@ function Dashboard() {
                 ))}
               </ul>
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* Price alerts banner (Premium) */}
+      {isPremium && priceAlerts.length > 0 && (
+        <section className="mt-4 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <TrendingUp className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold">
+                {priceAlertsUnread > 0
+                  ? `${priceAlertsUnread} new price alert${priceAlertsUnread === 1 ? "" : "s"}`
+                  : `${priceAlerts.length} price change${priceAlerts.length === 1 ? "" : "s"} tracked`}
+              </h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {priceAlerts.slice(0, 2).map((a) => a.subscription_name).filter(Boolean).join(", ")}
+                {priceAlerts.length > 2 ? ` and ${priceAlerts.length - 2} more` : ""}
+              </p>
+            </div>
+            <Button asChild size="sm" variant="outline" className="shrink-0">
+              <Link to="/app/alerts">Review</Link>
+            </Button>
           </div>
         </section>
       )}

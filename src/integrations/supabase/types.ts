@@ -14,8 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
+      price_alerts: {
+        Row: {
+          change_pct: number
+          created_at: string
+          id: string
+          new_cost: number
+          old_cost: number
+          source: string
+          status: string
+          subscription_id: string
+          user_id: string
+        }
+        Insert: {
+          change_pct: number
+          created_at?: string
+          id?: string
+          new_cost: number
+          old_cost: number
+          source?: string
+          status?: string
+          subscription_id: string
+          user_id: string
+        }
+        Update: {
+          change_pct?: number
+          created_at?: string
+          id?: string
+          new_cost?: number
+          old_cost?: number
+          source?: string
+          status?: string
+          subscription_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_alerts_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      price_history: {
+        Row: {
+          cost: number
+          id: string
+          recorded_at: string
+          source: string
+          subscription_id: string
+          user_id: string
+        }
+        Insert: {
+          cost: number
+          id?: string
+          recorded_at?: string
+          source?: string
+          subscription_id: string
+          user_id: string
+        }
+        Update: {
+          cost?: number
+          id?: string
+          recorded_at?: string
+          source?: string
+          subscription_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_history_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
+          alert_threshold_pct: number
+          alerts_enabled: boolean
           billing_cycle: string
           cancelled_at: string | null
           category: string
@@ -29,6 +110,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          alert_threshold_pct?: number
+          alerts_enabled?: boolean
           billing_cycle?: string
           cancelled_at?: string | null
           category?: string
@@ -42,6 +125,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          alert_threshold_pct?: number
+          alerts_enabled?: boolean
           billing_cycle?: string
           cancelled_at?: string | null
           category?: string

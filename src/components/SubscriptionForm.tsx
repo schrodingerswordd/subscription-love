@@ -9,6 +9,9 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CATEGORIES, SERVICE_PRESETS, getServicePreset, formatCurrency } from "@/lib/services";
 import { ServiceAvatar } from "@/components/ServiceAvatar";
+import { Switch } from "@/components/ui/switch";
+import { Bell, Crown } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export interface SubscriptionFormValue {
   name: string;
@@ -16,6 +19,8 @@ export interface SubscriptionFormValue {
   billing_cycle: "weekly" | "monthly" | "yearly";
   next_billing_date: string;
   category: string;
+  alerts_enabled: boolean;
+  alert_threshold_pct: number;
 }
 
 interface Props {
@@ -23,15 +28,23 @@ interface Props {
   submitting?: boolean;
   onSubmit: (v: SubscriptionFormValue) => void;
   submitLabel: string;
+  /** When true, shows price-alert configuration (Premium feature). */
+  showAlerts?: boolean;
+  /** When false (free tier), shows an upsell card instead of the inputs. */
+  alertsAvailable?: boolean;
 }
 
-export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel }: Props) {
+export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, showAlerts = false, alertsAvailable = true }: Props) {
   const navigate = useNavigate();
   const [name, setName] = useState(initial?.name ?? "");
   const [cost, setCost] = useState(initial?.cost?.toString() ?? "");
   const [cycle, setCycle] = useState<"weekly" | "monthly" | "yearly">(initial?.billing_cycle ?? "monthly");
   const [date, setDate] = useState(initial?.next_billing_date ?? new Date().toISOString().slice(0, 10));
   const [category, setCategory] = useState(initial?.category ?? "other");
+  const [alertsEnabled, setAlertsEnabled] = useState<boolean>(initial?.alerts_enabled ?? true);
+  const [thresholdPct, setThresholdPct] = useState<string>(
+    initial?.alert_threshold_pct !== undefined ? String(initial.alert_threshold_pct) : "0",
+  );
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Auto-detect category from service name
@@ -50,12 +63,15 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel }:
     e.preventDefault();
     const parsed = parseFloat(cost);
     if (!name.trim() || isNaN(parsed) || parsed < 0) return;
+    const threshold = Math.max(0, parseFloat(thresholdPct) || 0);
     onSubmit({
       name: name.trim(),
       cost: parsed,
       billing_cycle: cycle,
       next_billing_date: date,
       category,
+      alerts_enabled: alertsEnabled,
+      alert_threshold_pct: threshold,
     });
   }
 
@@ -168,6 +184,58 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel }:
           </SelectContent>
         </Select>
       </div>
+
+      {showAlerts && (
+        alertsAvailable ? (
+          <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2">
+                <Bell className="mt-0.5 h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-sm font-semibold">Price alerts</p>
+                  <p className="text-xs text-muted-foreground">
+                    We'll notify you when this subscription's price changes.
+                  </p>
+                </div>
+              </div>
+              <Switch checked={alertsEnabled} onCheckedChange={setAlertsEnabled} />
+            </div>
+            {alertsEnabled && (
+              <div className="space-y-1.5">
+                <Label htmlFor="threshold" className="text-xs">Alert threshold (%)</Label>
+                <div className="relative">
+                  <Input
+                    id="threshold"
+                    type="number"
+                    min={0}
+                    max={500}
+                    step={1}
+                    value={thresholdPct}
+                    onChange={(e) => setThresholdPct(e.target.value)}
+                    className="pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  {parseFloat(thresholdPct) > 0
+                    ? `Alert me when the price changes by ${parseFloat(thresholdPct)}% or more.`
+                    : "Alert me on any price change."}
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Link to="/pricing" className="flex items-start gap-2 rounded-xl border border-primary/30 bg-primary/5 p-4 transition hover:border-primary/60">
+            <Crown className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold">Get price alerts with Premium</p>
+              <p className="text-xs text-muted-foreground">
+                Be the first to know when this subscription's price goes up — even from bank scans.
+              </p>
+            </div>
+          </Link>
+        )
+      )}
 
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="outline" onClick={() => navigate({ to: "/app" })} className="flex-1">
