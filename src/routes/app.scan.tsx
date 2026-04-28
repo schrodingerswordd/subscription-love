@@ -52,6 +52,7 @@ function ScanPage() {
   const [statusMsg, setStatusMsg] = useState<string>("");
   const [candidates, setCandidates] = useState<RecurringCandidate[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [cycleOverrides, setCycleOverrides] = useState<Record<string, RecurringCandidate["cycle"]>>({});
   const [txnCount, setTxnCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
@@ -61,6 +62,7 @@ function ScanPage() {
     setStatusMsg("");
     setCandidates([]);
     setSelected(new Set());
+    setCycleOverrides({});
     setTxnCount(0);
     setError(null);
     if (inputRef.current) inputRef.current.value = "";
@@ -152,7 +154,7 @@ function ScanPage() {
         user_id: user.id,
         name: c.name,
         cost: c.amount,
-        billing_cycle: c.cycle,
+        billing_cycle: cycleOverrides[c.name] ?? c.cycle,
         next_billing_date: today,
         category: c.category,
         status: "active" as const,
