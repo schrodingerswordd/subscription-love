@@ -105,6 +105,16 @@ function AddSub() {
           submitLabel="Add subscription"
         />
       </div>
+
+      <UpgradePrompt
+        open={showUpgrade}
+        onClose={() => {
+          setShowUpgrade(false);
+          navigate({ to: "/app" });
+        }}
+        title="Free plan limit reached"
+        description={`You're tracking ${FREE_SUBSCRIPTION_LIMIT} subscriptions. Upgrade to Premium for unlimited tracking.`}
+      />
     </main>
   );
 }
