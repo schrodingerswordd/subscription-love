@@ -14,7 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      subscriptions: {
+        Row: {
+          billing_cycle: string
+          category: string
+          cost: number
+          created_at: string
+          id: string
+          name: string
+          next_billing_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_cycle?: string
+          category?: string
+          cost?: number
+          created_at?: string
+          id?: string
+          name: string
+          next_billing_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_cycle?: string
+          category?: string
+          cost?: number
+          created_at?: string
+          id?: string
+          name?: string
+          next_billing_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
