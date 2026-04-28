@@ -105,6 +105,8 @@ function AddSub() {
           onSubmit={handleSubmit}
           submitting={submitting}
           submitLabel="Add subscription"
+          showAlerts
+          alertsAvailable={isPremium}
         />
       </div>
 
