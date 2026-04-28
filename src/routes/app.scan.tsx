@@ -432,3 +432,28 @@ function ScanPage() {
     </main>
   );
 }
+
+function ScanPaywall() {
+  return (
+    <main className="mx-auto max-w-md px-4 pt-4">
+      <Link to="/app" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" /> Back
+      </Link>
+      <div className="mt-8 rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-card to-primary/5 p-6 text-center shadow-elegant">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-elegant">
+          <Crown className="h-7 w-7" />
+        </div>
+        <h1 className="mt-4 text-xl font-bold">Bank scanner is a Premium feature</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Upload a statement, let AI find every recurring charge, and add the ones you forgot — in seconds.
+        </p>
+        <Button asChild className="mt-6 w-full bg-gradient-primary hover:opacity-90">
+          <Link to="/pricing">
+            <Crown className="h-4 w-4" /> Upgrade for $2.99/mo
+          </Link>
+        </Button>
+        <p className="mt-3 text-xs text-muted-foreground">Cancel anytime.</p>
+      </div>
+    </main>
+  );
+}
