@@ -58,7 +58,12 @@ function DebugIcons() {
       <ul className="mt-5 space-y-2">
         {SERVICE_PRESETS.map((p) => {
           const status = statuses[p.name];
-          const url = p.slug ? `https://cdn.simpleicons.org/${p.slug}/white` : null;
+          const url = p.slug
+            ? `https://cdn.simpleicons.org/${p.slug}/white`
+            : p.domain
+              ? `https://www.google.com/s2/favicons?sz=128&domain=${p.domain}`
+              : null;
+          const source = p.slug ? "simple-icons" : p.domain ? "favicon" : "initials";
           const isOpen = selected === p.name;
 
           return (
