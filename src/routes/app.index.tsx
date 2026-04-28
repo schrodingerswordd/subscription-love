@@ -244,6 +244,31 @@ function Dashboard() {
         </section>
       )}
 
+      {/* Price alerts banner (Premium) */}
+      {isPremium && priceAlerts.length > 0 && (
+        <section className="mt-4 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <TrendingUp className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold">
+                {priceAlertsUnread > 0
+                  ? `${priceAlertsUnread} new price alert${priceAlertsUnread === 1 ? "" : "s"}`
+                  : `${priceAlerts.length} price change${priceAlerts.length === 1 ? "" : "s"} tracked`}
+              </h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {priceAlerts.slice(0, 2).map((a) => a.subscription_name).filter(Boolean).join(", ")}
+                {priceAlerts.length > 2 ? ` and ${priceAlerts.length - 2} more` : ""}
+              </p>
+            </div>
+            <Button asChild size="sm" variant="outline" className="shrink-0">
+              <Link to="/app/alerts">Review</Link>
+            </Button>
+          </div>
+        </section>
+      )}
+
       {/* Savings card */}
       {cancelledSubs.length > 0 && (
         <section className="mt-4 rounded-2xl border border-border bg-card p-5 shadow-card-soft">
