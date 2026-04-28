@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ScanRouteImport } from './routes/scan'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -22,6 +23,11 @@ import { Route as AppEditIdRouteImport } from './routes/app.edit.$id'
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/login'
+    | '/scan'
     | '/signup'
     | '/app/add'
     | '/app/debug-icons'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/scan'
     | '/signup'
     | '/app/add'
     | '/app/debug-icons'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/login'
+    | '/scan'
     | '/signup'
     | '/app/add'
     | '/app/debug-icons'
@@ -137,6 +149,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ScanRoute: typeof ScanRoute
   SignupRoute: typeof SignupRoute
 }
 
@@ -147,6 +160,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -230,6 +250,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  ScanRoute: ScanRoute,
   SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
