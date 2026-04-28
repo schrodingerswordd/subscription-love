@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { getServicePreset, getInitials } from "@/lib/services";
 
 interface Props {
@@ -10,8 +11,9 @@ export function ServiceAvatar({ name, size = 44, className }: Props) {
   const preset = getServicePreset(name);
   const bg = preset?.color ?? "#6366F1";
   const initials = getInitials(name || "?");
+  const [imgFailed, setImgFailed] = useState(false);
 
-  // Determine readable text color
+  // Determine readable text color based on background luminance
   const isDark = (() => {
     const hex = bg.replace("#", "");
     if (hex.length !== 6) return true;
@@ -22,9 +24,15 @@ export function ServiceAvatar({ name, size = 44, className }: Props) {
     return luma < 0.6;
   })();
 
+  // simple-icons CDN serves monochrome SVGs; we tint to white or near-black
+  const tint = isDark ? "white" : "111111";
+  const logoUrl = preset?.slug
+    ? `https://cdn.simpleicons.org/${preset.slug}/${tint}`
+    : null;
+
   return (
     <div
-      className={"flex shrink-0 items-center justify-center rounded-xl font-semibold " + (className ?? "")}
+      className={"flex shrink-0 items-center justify-center overflow-hidden rounded-xl font-semibold " + (className ?? "")}
       style={{
         backgroundColor: bg,
         color: isDark ? "#fff" : "#111",
@@ -34,7 +42,19 @@ export function ServiceAvatar({ name, size = 44, className }: Props) {
         letterSpacing: "-0.02em",
       }}
     >
-      {initials}
+      {logoUrl && !imgFailed ? (
+        <img
+          src={logoUrl}
+          alt={name}
+          width={size * 0.55}
+          height={size * 0.55}
+          loading="lazy"
+          onError={() => setImgFailed(true)}
+          style={{ width: size * 0.55, height: size * 0.55 }}
+        />
+      ) : (
+        initials
+      )}
     </div>
   );
 }
