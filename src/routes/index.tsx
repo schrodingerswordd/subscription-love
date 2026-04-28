@@ -264,6 +264,56 @@ function Landing() {
         </ul>
       </section>
 
+      {/* FAQ */}
+      <section className="mx-auto max-w-3xl px-4 py-20 sm:px-6">
+        <div className="text-center">
+          <span className="cp-tag">// intel.dump</span>
+          <h2 className="mt-4 text-3xl font-black uppercase tracking-tight sm:text-5xl">
+            Frequently <span className="cp-neon-text">decrypted</span>
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-[var(--cp-muted)]">
+            Straight answers, no corpo doublespeak.
+          </p>
+        </div>
+        <div className="mt-10 space-y-3">
+          {[
+            {
+              q: "How do the renewal reminders work?",
+              a: "Three days before a sub re-charges your wallet, SubTrack flags it on your dashboard with a neon warning — name, amount, days left. No email spam, no push permissions, just a heads-up the moment you jack in.",
+            },
+            {
+              q: "What happens when I cancel a subscription?",
+              a: "Hit cancel and we don't nuke the record — we mark it as flatlined and stamp the date. The sub drops out of your monthly drain instantly and starts feeding the savings counter so you can see exactly how many eddies you've clawed back.",
+            },
+            {
+              q: "Is my data actually private?",
+              a: "Yes, choomba. We never ask for bank credentials or card numbers — you type what you want to track. Everything is locked behind your account with row-level security, encrypted in transit and at rest, and you can wipe the whole stash anytime from your dashboard.",
+            },
+            {
+              q: "Do you sell my data to the megacorps?",
+              a: "Never. No analytics resold, no ad networks, no Arasaka backdoor. SubTrack runs on your data only to show you your data. That's the whole contract.",
+            },
+          ].map((item) => (
+            <details
+              key={item.q}
+              className="cp-card group rounded-md p-5 [&_summary::-webkit-details-marker]:hidden"
+            >
+              <summary className="flex cursor-pointer items-center justify-between gap-4 text-left">
+                <span className="text-sm font-bold uppercase tracking-wider text-[var(--cp-fg)] sm:text-base">
+                  <span className="cp-cyan">&gt;</span> {item.q}
+                </span>
+                <span className="cp-magenta text-xl font-black transition-transform group-open:rotate-45">
+                  +
+                </span>
+              </summary>
+              <p className="mt-3 border-t border-[var(--cp-line)] pt-3 text-sm leading-relaxed text-[var(--cp-muted)]">
+                {item.a}
+              </p>
+            </details>
+          ))}
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="px-4 pb-24 sm:px-6">
         <div className="mx-auto max-w-4xl">
