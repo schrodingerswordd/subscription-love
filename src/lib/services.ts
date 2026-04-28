@@ -40,27 +40,30 @@ export interface ServicePreset {
   initials?: string;
 }
 
+// Note: Disney, Amazon, Hulu, OpenAI, Adobe, Xbox, Nintendo, Google One were
+// removed from simple-icons due to trademark policy. Those fall back to
+// nicely-colored brand initials, which is intentional.
 export const SERVICE_PRESETS: ServicePreset[] = [
   { name: "Netflix", category: "entertainment", color: "#E50914", slug: "netflix", defaultCost: 15.49 },
   { name: "Spotify", category: "music", color: "#1DB954", slug: "spotify", defaultCost: 11.99 },
-  { name: "Disney+", category: "entertainment", color: "#0E47A1", slug: "disneyplus", defaultCost: 9.99 },
+  { name: "Disney+", category: "entertainment", color: "#0E47A1", defaultCost: 9.99 },
   { name: "YouTube Premium", category: "entertainment", color: "#FF0000", slug: "youtube", defaultCost: 13.99 },
   { name: "Apple Music", category: "music", color: "#FA243C", slug: "applemusic", defaultCost: 10.99 },
   { name: "Apple TV+", category: "entertainment", color: "#000000", slug: "appletv", defaultCost: 9.99 },
-  { name: "Amazon Prime", category: "shopping", color: "#00A8E1", slug: "amazonprime", defaultCost: 14.99 },
+  { name: "Amazon Prime", category: "shopping", color: "#00A8E1", defaultCost: 14.99 },
   { name: "HBO Max", category: "entertainment", color: "#5822B4", slug: "max", defaultCost: 15.99 },
-  { name: "Hulu", category: "entertainment", color: "#1CE783", slug: "hulu", defaultCost: 7.99 },
+  { name: "Hulu", category: "entertainment", color: "#1CE783", defaultCost: 7.99 },
   { name: "Notion", category: "productivity", color: "#000000", slug: "notion", defaultCost: 10 },
-  { name: "ChatGPT Plus", category: "ai", color: "#10A37F", slug: "openai", defaultCost: 20 },
+  { name: "ChatGPT Plus", category: "ai", color: "#10A37F", defaultCost: 20 },
   { name: "Claude Pro", category: "ai", color: "#D97757", slug: "claude", defaultCost: 20 },
-  { name: "Adobe Creative Cloud", category: "productivity", color: "#FA0F00", slug: "adobecreativecloud", defaultCost: 59.99 },
+  { name: "Adobe Creative Cloud", category: "productivity", color: "#FA0F00", defaultCost: 59.99 },
   { name: "GitHub", category: "productivity", color: "#181717", slug: "github", defaultCost: 4 },
   { name: "iCloud+", category: "cloud", color: "#1B82F1", slug: "icloud", defaultCost: 2.99 },
-  { name: "Google One", category: "cloud", color: "#4285F4", slug: "googleone", defaultCost: 1.99 },
+  { name: "Google Drive", category: "cloud", color: "#4285F4", slug: "googledrive", defaultCost: 1.99 },
   { name: "Dropbox", category: "cloud", color: "#0061FF", slug: "dropbox", defaultCost: 11.99 },
-  { name: "Xbox Game Pass", category: "gaming", color: "#107C10", slug: "xbox", defaultCost: 16.99 },
+  { name: "Xbox Game Pass", category: "gaming", color: "#107C10", defaultCost: 16.99 },
   { name: "PlayStation Plus", category: "gaming", color: "#003791", slug: "playstation", defaultCost: 10.99 },
-  { name: "Nintendo Switch Online", category: "gaming", color: "#E60012", slug: "nintendoswitch", defaultCost: 3.99 },
+  { name: "Nintendo Switch Online", category: "gaming", color: "#E60012", defaultCost: 3.99 },
   { name: "Peloton", category: "fitness", color: "#181A1D", slug: "peloton", defaultCost: 24 },
   { name: "Strava", category: "fitness", color: "#FC4C02", slug: "strava", defaultCost: 11.99 },
   { name: "NYTimes", category: "news", color: "#000000", slug: "newyorktimes", defaultCost: 17 },
