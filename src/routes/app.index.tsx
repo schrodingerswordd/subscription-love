@@ -412,13 +412,20 @@ function EmptyState() {
       </div>
       <h3 className="mt-4 font-semibold">No active subscriptions</h3>
       <p className="mt-1 text-sm text-muted-foreground">
-        Tap a quick-add above or add one manually to start tracking.
+        Tap a quick-add above, add one manually, or scan a bank statement to find them all at once.
       </p>
-      <Button asChild className="mt-5 bg-gradient-primary hover:opacity-90">
-        <Link to="/app/add">
-          <Plus className="h-4 w-4" /> Add subscription
-        </Link>
-      </Button>
+      <div className="mt-5 flex flex-wrap justify-center gap-2">
+        <Button asChild className="bg-gradient-primary hover:opacity-90">
+          <Link to="/app/add">
+            <Plus className="h-4 w-4" /> Add subscription
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/app/scan">
+            <ScanLine className="h-4 w-4" /> Scan statement
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }
