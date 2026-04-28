@@ -125,8 +125,14 @@ function ScanPage() {
 
       setTxnCount(result.transactionCount);
       setCandidates(result.candidates);
-      // Pre-select all not-yet-tracked
-      setSelected(new Set(result.candidates.filter((c) => !c.alreadyTracked).map((c) => c.name)));
+      // Pre-select high-confidence, not-yet-tracked candidates only
+      setSelected(
+        new Set(
+          result.candidates
+            .filter((c) => !c.alreadyTracked && c.confidence >= 70)
+            .map((c) => c.name),
+        ),
+      );
       setStage("results");
     } catch (e) {
       console.error(e);
