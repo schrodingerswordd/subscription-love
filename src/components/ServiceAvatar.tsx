@@ -28,7 +28,12 @@ export function ServiceAvatar({ name, size = 44, className }: Props) {
   const tint = isDark ? "white" : "111111";
   const logoUrl = preset?.slug
     ? `https://cdn.simpleicons.org/${preset.slug}/${tint}`
-    : null;
+    : preset?.domain
+      ? `https://www.google.com/s2/favicons?sz=128&domain=${preset.domain}`
+      : null;
+  // Favicon fallback is full-color, so render at full avatar size with no tint
+  const isFavicon = !preset?.slug && !!preset?.domain;
+  const inner = isFavicon ? size * 0.78 : size * 0.55;
 
   return (
     <div
@@ -46,11 +51,11 @@ export function ServiceAvatar({ name, size = 44, className }: Props) {
         <img
           src={logoUrl}
           alt={name}
-          width={size * 0.55}
-          height={size * 0.55}
+          width={inner}
+          height={inner}
           loading="lazy"
           onError={() => setImgFailed(true)}
-          style={{ width: size * 0.55, height: size * 0.55 }}
+          style={{ width: inner, height: inner, objectFit: "contain" }}
         />
       ) : (
         initials
