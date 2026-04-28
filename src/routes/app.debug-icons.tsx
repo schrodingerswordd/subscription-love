@@ -134,13 +134,13 @@ function DebugIcons() {
                   </Row>
                   <Row label="Reason">
                     <span className="text-muted-foreground">
-                      {!p.slug
-                        ? "No simple-icons slug defined for this preset → renders initials."
+                      {!p.slug && !p.domain
+                        ? "No slug or domain defined → renders initials."
                         : status === "failed"
-                          ? `Image failed to load (likely 404 — slug "${p.slug}" not found on cdn.simpleicons.org, or network blocked). Avatar falls back to initials.`
+                          ? `Image failed to load from ${source} (${url}). Falls back to initials.`
                           : status === "loading"
                             ? "Probe still loading…"
-                            : "Logo loaded successfully — avatar shows the brand SVG tinted for contrast."}
+                            : `Logo loaded successfully via ${source}.`}
                     </span>
                   </Row>
                 </div>
