@@ -48,6 +48,12 @@ function ScanPage() {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const analyze = useServerFn(analyzeStatement);
+  const { isPremium, loading: subLoading } = useSubscription();
+
+  if (!subLoading && !isPremium) {
+    return <ScanPaywall />;
+  }
+
 
   const [stage, setStage] = useState<Stage>("idle");
   const [statusMsg, setStatusMsg] = useState<string>("");
