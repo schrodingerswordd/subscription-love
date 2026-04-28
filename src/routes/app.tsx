@@ -2,8 +2,9 @@ import { useEffect } from "react";
 import { createFileRoute, Outlet, useNavigate, Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { useSubscription } from "@/hooks/useSubscription";
+import { usePriceAlerts } from "@/hooks/usePriceAlerts";
 import { Button } from "@/components/ui/button";
-import { LogOut, Wallet, Crown } from "lucide-react";
+import { LogOut, Wallet, Crown, Bell } from "lucide-react";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { toast } from "sonner";
 
@@ -15,6 +16,7 @@ function AppLayout() {
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
   const { isPremium } = useSubscription();
+  const { unreadCount } = usePriceAlerts();
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/login" });
@@ -51,6 +53,18 @@ function AppLayout() {
             )}
           </Link>
           <div className="flex items-center gap-1">
+            {isPremium && (
+              <Button asChild variant="ghost" size="sm" className="relative text-muted-foreground hover:text-foreground" aria-label="Price alerts">
+                <Link to="/app/alerts">
+                  <Bell className="h-4 w-4" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              </Button>
+            )}
             {!isPremium && (
               <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary">
                 <Link to="/pricing">
