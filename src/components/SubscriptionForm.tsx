@@ -9,6 +9,9 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CATEGORIES, SERVICE_PRESETS, getServicePreset, formatCurrency } from "@/lib/services";
 import { ServiceAvatar } from "@/components/ServiceAvatar";
+import { Switch } from "@/components/ui/switch";
+import { Bell, Crown } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export interface SubscriptionFormValue {
   name: string;
@@ -16,6 +19,8 @@ export interface SubscriptionFormValue {
   billing_cycle: "weekly" | "monthly" | "yearly";
   next_billing_date: string;
   category: string;
+  alerts_enabled: boolean;
+  alert_threshold_pct: number;
 }
 
 interface Props {
