@@ -168,11 +168,16 @@ function Dashboard() {
       <section className="mt-6">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">Your subscriptions</h2>
-          <Button asChild size="sm" variant="outline">
-            <Link to="/app/add">
-              <Plus className="h-4 w-4" /> Add
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm" variant="ghost" className="text-xs text-muted-foreground">
+              <Link to="/app/debug-icons">Debug icons</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/app/add">
+                <Plus className="h-4 w-4" /> Add
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {loading ? (
