@@ -185,6 +185,58 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
         </Select>
       </div>
 
+      {showAlerts && (
+        alertsAvailable ? (
+          <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2">
+                <Bell className="mt-0.5 h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-sm font-semibold">Price alerts</p>
+                  <p className="text-xs text-muted-foreground">
+                    We'll notify you when this subscription's price changes.
+                  </p>
+                </div>
+              </div>
+              <Switch checked={alertsEnabled} onCheckedChange={setAlertsEnabled} />
+            </div>
+            {alertsEnabled && (
+              <div className="space-y-1.5">
+                <Label htmlFor="threshold" className="text-xs">Alert threshold (%)</Label>
+                <div className="relative">
+                  <Input
+                    id="threshold"
+                    type="number"
+                    min={0}
+                    max={500}
+                    step={1}
+                    value={thresholdPct}
+                    onChange={(e) => setThresholdPct(e.target.value)}
+                    className="pr-8"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  {parseFloat(thresholdPct) > 0
+                    ? `Alert me when the price changes by ${parseFloat(thresholdPct)}% or more.`
+                    : "Alert me on any price change."}
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Link to="/pricing" className="flex items-start gap-2 rounded-xl border border-primary/30 bg-primary/5 p-4 transition hover:border-primary/60">
+            <Crown className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold">Get price alerts with Premium</p>
+              <p className="text-xs text-muted-foreground">
+                Be the first to know when this subscription's price goes up — even from bank scans.
+              </p>
+            </div>
+          </Link>
+        )
+      )}
+
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="outline" onClick={() => navigate({ to: "/app" })} className="flex-1">
           Cancel
