@@ -228,14 +228,18 @@ export const analyzeStatement = createServerFn({ method: "POST" })
       return { candidates: [], transactionCount: txns.length, error: null };
     }
 
-    // Pull existing active subs to flag duplicates
+    // Pull existing active subs to flag duplicates and link price-change matches.
     const { data: existing } = await supabase
       .from("subscriptions")
-      .select("name")
+      .select("id,name,cost")
       .eq("status", "active");
-    const existingNames = new Set(
-      (existing ?? []).map((r) => (r.name as string).toLowerCase().trim()),
-    );
+
+    type ExistingSub = { id: string; name: string; cost: number };
+    const existingSubs: ExistingSub[] = (existing ?? []).map((r) => ({
+      id: r.id as string,
+      name: r.name as string,
+      cost: Number(r.cost),
+    }));
 
     const cleanup = await cleanupWithAI(recurring);
 
@@ -246,13 +250,104 @@ export const analyzeStatement = createServerFn({ method: "POST" })
         SERVICE_PRESETS.find((p) => p.name === finalName)?.category ??
         cleaned?.category ??
         "other";
+      const match = matchExistingSubscription(
+        { cleanName: finalName, rawDescriptor: c.raw, presetName: cleaned?.matchedPresetName ?? null },
+        existingSubs,
+      );
       return {
         ...c,
         name: finalName,
         category: finalCategory,
-        alreadyTracked: existingNames.has(finalName.toLowerCase().trim()),
+        alreadyTracked: !!match,
+        matchedSubscriptionId: match?.id,
+        matchedSubscriptionCost: match?.cost,
       };
     });
 
     return { candidates: finalCandidates, transactionCount: txns.length, error: null };
   });
+
+/**
+ * Normalize a merchant / subscription name for fuzzy comparison.
+ * Strips punctuation, common payment-processor noise (e.g. "PAYPAL *"),
+ * trailing IDs / city codes, plan suffixes ("PREMIUM", "PLUS"),
+ * and collapses whitespace. Returns "" for empty input.
+ */
+function normalizeName(input: string): string {
+  if (!input) return "";
+  let s = input.toLowerCase();
+  s = s.replace(/^(paypal|sq|sp|tst|pos|dd|gp|google|apl|apple\.com\/bill)[\s*\-:]+/i, "");
+  s = s.replace(/\s+\d{4,}.*$/, "");
+  s = s.replace(/\b(premium|plus|pro|family|individual|basic|monthly|yearly|annual|subscription|membership|sub|inc|llc|ltd|co|corp|com|usa|us|uk)\b/g, "");
+  s = s.replace(/[^a-z0-9]+/g, " ").trim();
+  return s;
+}
+
+function editDistance(a: string, b: string): number {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const dp: number[][] = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+  for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+    }
+  }
+  return dp[a.length][b.length];
+}
+
+/**
+ * Score how confident we are that a candidate matches an existing subscription.
+ * 0–100. Strong bias toward canonical preset matches, then fuzzy name
+ * matching against the cleaned candidate and raw bank descriptor.
+ */
+function scoreMatch(
+  candidate: { cleanName: string; rawDescriptor: string; presetName: string | null },
+  sub: { name: string },
+): number {
+  const subPreset = SERVICE_PRESETS.find((p) => p.name.toLowerCase() === sub.name.toLowerCase());
+  const candPreset = candidate.presetName;
+
+  // 1. Both resolve to the same canonical preset → certain match.
+  if (subPreset && candPreset && subPreset.name === candPreset) return 100;
+
+  const subN = normalizeName(sub.name);
+  const candN = normalizeName(candidate.cleanName);
+  if (!subN || !candN) return 0;
+
+  // 2. Exact normalized match.
+  if (subN === candN) return 95;
+
+  // 3. One contains the other ("netflix" ⊂ "netflix premium").
+  if (subN.length >= 3 && candN.length >= 3 && (subN.includes(candN) || candN.includes(subN))) {
+    return 88;
+  }
+
+  // 4. Fuzzy edit-distance similarity.
+  const longer = Math.max(subN.length, candN.length);
+  const sim = 1 - editDistance(subN, candN) / longer;
+  if (sim >= 0.85) return Math.round(sim * 90);
+
+  // 5. Last resort: brand name embedded in raw descriptor.
+  const rawN = normalizeName(candidate.rawDescriptor);
+  if (rawN && subN.length >= 4 && rawN.includes(subN)) return 80;
+
+  return 0;
+}
+
+function matchExistingSubscription(
+  candidate: { cleanName: string; rawDescriptor: string; presetName: string | null },
+  existing: { id: string; name: string; cost: number }[],
+): { id: string; cost: number } | null {
+  let best: { id: string; cost: number; score: number } | null = null;
+  for (const sub of existing) {
+    const score = scoreMatch(candidate, sub);
+    if (score >= 80 && (!best || score > best.score)) {
+      best = { id: sub.id, cost: sub.cost, score };
+    }
+  }
+  return best ? { id: best.id, cost: best.cost } : null;
+}
