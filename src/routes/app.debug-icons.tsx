@@ -85,7 +85,7 @@ function DebugIcons() {
                     </code>
                   </div>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                    {url ?? "no slug — always falls back to initials"}
+                    {url ? `${source}: ${url}` : "no slug or domain — falls back to initials"}
                   </p>
                 </div>
                 <StatusPill status={status} hasSlug={!!p.slug} />
