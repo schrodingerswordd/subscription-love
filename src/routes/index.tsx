@@ -278,20 +278,20 @@ function Landing() {
         <div className="mt-10 space-y-3">
           {[
             {
-              q: "How do the renewal reminders work?",
-              a: "Three days before a sub re-charges your wallet, SubTrack flags it on your dashboard with a neon warning — name, amount, days left. No email spam, no push permissions, just a heads-up the moment you jack in.",
+              q: "Will you actually remind me before they charge me?",
+              a: "Yeah. Three days before the next charge, the sub goes loud on your dashboard — name, price, countdown. No 6am push notifications. No \"WE MISS YOU\" emails. Just the info, where you'll see it, when it matters.",
             },
             {
-              q: "What happens when I cancel a subscription?",
-              a: "Hit cancel and we don't nuke the record — we mark it as flatlined and stamp the date. The sub drops out of your monthly drain instantly and starts feeding the savings counter so you can see exactly how many eddies you've clawed back.",
+              q: "Why \"cancel\" instead of just deleting it?",
+              a: "Because deleting it pretends you never paid for it. Cancelling keeps the receipt, freezes the bleeding, and dumps every dollar you stop paying straight into the Savings counter. You get to watch the number go up. That's the whole point.",
             },
             {
-              q: "Is my data actually private?",
-              a: "Yes, choomba. We never ask for bank credentials or card numbers — you type what you want to track. Everything is locked behind your account with row-level security, encrypted in transit and at rest, and you can wipe the whole stash anytime from your dashboard.",
+              q: "What do you do with my data?",
+              a: "Nothing. We don't have your bank, your card, or your soul — you type what you want to track, that's it. Your row, your rules, locked behind your login. No ads, no resale, no \"trusted partners.\" If that ever changes, we shut down. Easier that way.",
             },
             {
-              q: "Do you sell my data to the megacorps?",
-              a: "Never. No analytics resold, no ad networks, no Arasaka backdoor. SubTrack runs on your data only to show you your data. That's the whole contract.",
+              q: "Can I delete everything?",
+              a: "One click. Account, subs, history — gone, no exit survey, no \"are you sure?\" guilt trip. We're not Adobe.",
             },
           ].map((item) => (
             <details
