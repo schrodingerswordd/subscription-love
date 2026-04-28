@@ -142,6 +142,50 @@ function ScanPage() {
         ),
       );
       setStage("results");
+
+      // For already-tracked candidates whose detected amount differs from
+      // the saved cost, record a new price observation. The DB trigger will
+      // emit a price_alert if the change exceeds the user's threshold.
+      void detectAndRecordPriceChanges(result.candidates);
+    } catch (e) {
+      console.error(e);
+      setError(e instanceof Error ? e.message : "Failed to scan file");
+      setStage("idle");
+    }
+  }
+
+  async function detectAndRecordPriceChanges(cands: RecurringCandidate[]) {
+    if (!user) return;
+    const tracked = cands.filter((c) => c.alreadyTracked);
+    if (tracked.length === 0) return;
+    const { data: existing } = await supabase
+      .from("subscriptions")
+      .select("id,name,cost")
+      .eq("status", "active");
+    if (!existing) return;
+    const byName = new Map(existing.map((s) => [s.name.toLowerCase(), s]));
+    let newAlertCandidates = 0;
+    for (const c of tracked) {
+      const sub = byName.get(c.name.toLowerCase());
+      if (!sub) continue;
+      const oldCost = Number(sub.cost);
+      // Only record meaningful diffs (avoid floating-point noise).
+      if (Math.abs(oldCost - c.amount) >= 0.01) {
+        await recordPrice({
+          subscriptionId: sub.id,
+          userId: user.id,
+          cost: c.amount,
+          source: "scan",
+        });
+        newAlertCandidates += 1;
+      }
+    }
+    if (newAlertCandidates > 0) {
+      toast.message(`${newAlertCandidates} price change${newAlertCandidates === 1 ? "" : "s"} detected`, {
+        description: "Check your price alerts.",
+      });
+    }
+  }
     } catch (e) {
       console.error(e);
       setError(e instanceof Error ? e.message : "Failed to scan file");
