@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppDebugIconsRouteImport } from './routes/app.debug-icons'
 import { Route as AppAddRouteImport } from './routes/app.add'
 import { Route as AppEditIdRouteImport } from './routes/app.edit.$id'
 
@@ -42,6 +43,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDebugIconsRoute = AppDebugIconsRouteImport.update({
+  id: '/debug-icons',
+  path: '/debug-icons',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAddRoute = AppAddRouteImport.update({
   id: '/add',
   path: '/add',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
+  '/app/debug-icons': typeof AppDebugIconsRoute
   '/app/': typeof AppIndexRoute
   '/app/edit/$id': typeof AppEditIdRoute
 }
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
+  '/app/debug-icons': typeof AppDebugIconsRoute
   '/app': typeof AppIndexRoute
   '/app/edit/$id': typeof AppEditIdRoute
 }
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
+  '/app/debug-icons': typeof AppDebugIconsRoute
   '/app/': typeof AppIndexRoute
   '/app/edit/$id': typeof AppEditIdRoute
 }
@@ -88,10 +97,18 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/app/add'
+    | '/app/debug-icons'
     | '/app/'
     | '/app/edit/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/signup' | '/app/add' | '/app' | '/app/edit/$id'
+  to:
+    | '/'
+    | '/login'
+    | '/signup'
+    | '/app/add'
+    | '/app/debug-icons'
+    | '/app'
+    | '/app/edit/$id'
   id:
     | '__root__'
     | '/'
@@ -99,6 +116,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/app/add'
+    | '/app/debug-icons'
     | '/app/'
     | '/app/edit/$id'
   fileRoutesById: FileRoutesById
@@ -147,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/debug-icons': {
+      id: '/app/debug-icons'
+      path: '/debug-icons'
+      fullPath: '/app/debug-icons'
+      preLoaderRoute: typeof AppDebugIconsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/add': {
       id: '/app/add'
       path: '/add'
@@ -166,12 +191,14 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAddRoute: typeof AppAddRoute
+  AppDebugIconsRoute: typeof AppDebugIconsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppEditIdRoute: typeof AppEditIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAddRoute: AppAddRoute,
+  AppDebugIconsRoute: AppDebugIconsRoute,
   AppIndexRoute: AppIndexRoute,
   AppEditIdRoute: AppEditIdRoute,
 }
