@@ -58,7 +58,12 @@ function DebugIcons() {
       <ul className="mt-5 space-y-2">
         {SERVICE_PRESETS.map((p) => {
           const status = statuses[p.name];
-          const url = p.slug ? `https://cdn.simpleicons.org/${p.slug}/white` : null;
+          const url = p.slug
+            ? `https://cdn.simpleicons.org/${p.slug}/white`
+            : p.domain
+              ? `https://www.google.com/s2/favicons?sz=128&domain=${p.domain}`
+              : null;
+          const source = p.slug ? "simple-icons" : p.domain ? "favicon" : "initials";
           const isOpen = selected === p.name;
 
           return (
@@ -80,10 +85,10 @@ function DebugIcons() {
                     </code>
                   </div>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                    {url ?? "no slug — always falls back to initials"}
+                    {url ? `${source}: ${url}` : "no slug or domain — falls back to initials"}
                   </p>
                 </div>
-                <StatusPill status={status} hasSlug={!!p.slug} />
+                <StatusPill status={status} hasSlug={!!url} />
 
                 {/* Hidden probe image to detect load success/failure */}
                 {url && (
@@ -129,13 +134,13 @@ function DebugIcons() {
                   </Row>
                   <Row label="Reason">
                     <span className="text-muted-foreground">
-                      {!p.slug
-                        ? "No simple-icons slug defined for this preset → renders initials."
+                      {!p.slug && !p.domain
+                        ? "No slug or domain defined → renders initials."
                         : status === "failed"
-                          ? `Image failed to load (likely 404 — slug "${p.slug}" not found on cdn.simpleicons.org, or network blocked). Avatar falls back to initials.`
+                          ? `Image failed to load from ${source} (${url}). Falls back to initials.`
                           : status === "loading"
                             ? "Probe still loading…"
-                            : "Logo loaded successfully — avatar shows the brand SVG tinted for contrast."}
+                            : `Logo loaded successfully via ${source}.`}
                     </span>
                   </Row>
                 </div>
