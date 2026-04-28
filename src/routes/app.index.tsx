@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Pencil, Trash2, Calendar, Sparkles, Bell, Ban, RotateCcw, PiggyBank } from "lucide-react";
+import { Plus, Pencil, Trash2, Calendar, Sparkles, Bell, Ban, RotateCcw, PiggyBank, ScanLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -292,6 +292,11 @@ function Dashboard() {
           <div className="flex items-center gap-2">
             <Button asChild size="sm" variant="ghost" className="text-xs text-muted-foreground">
               <Link to="/app/debug-icons">Debug icons</Link>
+            </Button>
+            <Button asChild size="sm" variant="secondary">
+              <Link to="/app/scan">
+                <ScanLine className="h-4 w-4" /> Scan
+              </Link>
             </Button>
             <Button asChild size="sm" variant="outline">
               <Link to="/app/add">
