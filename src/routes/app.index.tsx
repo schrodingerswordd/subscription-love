@@ -47,6 +47,7 @@ export const Route = createFileRoute("/app/")({
 function Dashboard() {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
+  const { alerts: priceAlerts, unreadCount: priceAlertsUnread } = usePriceAlerts();
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
