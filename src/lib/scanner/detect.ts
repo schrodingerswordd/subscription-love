@@ -126,6 +126,6 @@ export function detectRecurring(txns: RawTransaction[]): RecurringCandidate[] {
     });
   }
 
-  // Sort by amount descending — biggest leeches first.
-  return candidates.sort((a, b) => b.amount - a.amount);
+  // Sort by confidence desc, then by amount desc.
+  return candidates.sort((a, b) => b.confidence - a.confidence || b.amount - a.amount);
 }
