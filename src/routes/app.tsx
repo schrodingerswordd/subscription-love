@@ -53,6 +53,18 @@ function AppLayout() {
             )}
           </Link>
           <div className="flex items-center gap-1">
+            {isPremium && (
+              <Button asChild variant="ghost" size="sm" className="relative text-muted-foreground hover:text-foreground" aria-label="Price alerts">
+                <Link to="/app/alerts">
+                  <Bell className="h-4 w-4" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              </Button>
+            )}
             {!isPremium && (
               <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary">
                 <Link to="/pricing">
