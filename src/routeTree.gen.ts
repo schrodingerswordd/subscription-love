@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppScanRouteImport } from './routes/app.scan'
 import { Route as AppDebugIconsRouteImport } from './routes/app.debug-icons'
 import { Route as AppAddRouteImport } from './routes/app.add'
 import { Route as AppEditIdRouteImport } from './routes/app.edit.$id'
@@ -43,6 +44,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppScanRoute = AppScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDebugIconsRoute = AppDebugIconsRouteImport.update({
   id: '/debug-icons',
   path: '/debug-icons',
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
+  '/app/scan': typeof AppScanRoute
   '/app/': typeof AppIndexRoute
   '/app/edit/$id': typeof AppEditIdRoute
 }
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
+  '/app/scan': typeof AppScanRoute
   '/app': typeof AppIndexRoute
   '/app/edit/$id': typeof AppEditIdRoute
 }
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
+  '/app/scan': typeof AppScanRoute
   '/app/': typeof AppIndexRoute
   '/app/edit/$id': typeof AppEditIdRoute
 }
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/add'
     | '/app/debug-icons'
+    | '/app/scan'
     | '/app/'
     | '/app/edit/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/add'
     | '/app/debug-icons'
+    | '/app/scan'
     | '/app'
     | '/app/edit/$id'
   id:
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/add'
     | '/app/debug-icons'
+    | '/app/scan'
     | '/app/'
     | '/app/edit/$id'
   fileRoutesById: FileRoutesById
@@ -165,6 +177,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/scan': {
+      id: '/app/scan'
+      path: '/scan'
+      fullPath: '/app/scan'
+      preLoaderRoute: typeof AppScanRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/debug-icons': {
       id: '/app/debug-icons'
       path: '/debug-icons'
@@ -192,6 +211,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAddRoute: typeof AppAddRoute
   AppDebugIconsRoute: typeof AppDebugIconsRoute
+  AppScanRoute: typeof AppScanRoute
   AppIndexRoute: typeof AppIndexRoute
   AppEditIdRoute: typeof AppEditIdRoute
 }
@@ -199,6 +219,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAddRoute: AppAddRoute,
   AppDebugIconsRoute: AppDebugIconsRoute,
+  AppScanRoute: AppScanRoute,
   AppIndexRoute: AppIndexRoute,
   AppEditIdRoute: AppEditIdRoute,
 }
