@@ -4,9 +4,16 @@ import { ArrowLeft } from "lucide-react";
 import { SubscriptionForm, type SubscriptionFormValue } from "@/components/SubscriptionForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { getServicePreset } from "@/lib/services";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const searchSchema = z.object({
+  preset: z.string().optional(),
+});
 
 export const Route = createFileRoute("/app/add")({
+  validateSearch: searchSchema,
   head: () => ({
     meta: [
       { title: "Add subscription — SubTrack" },
@@ -19,7 +26,17 @@ export const Route = createFileRoute("/app/add")({
 function AddSub() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { preset } = Route.useSearch();
   const [submitting, setSubmitting] = useState(false);
+
+  const presetMatch = preset ? getServicePreset(preset) : undefined;
+  const initial = presetMatch
+    ? {
+        name: presetMatch.name,
+        cost: presetMatch.defaultCost,
+        category: presetMatch.category,
+      }
+    : undefined;
 
   async function handleSubmit(v: SubscriptionFormValue) {
     if (!user) return;
@@ -47,10 +64,18 @@ function AddSub() {
         <ArrowLeft className="h-4 w-4" /> Back
       </Link>
       <h1 className="mt-3 text-2xl font-bold tracking-tight">Add subscription</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Track a new recurring payment.</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {presetMatch ? `Prefilled with ${presetMatch.name}'s typical price — adjust if needed.` : "Track a new recurring payment."}
+      </p>
 
       <div className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-card-soft sm:p-6">
-        <SubscriptionForm onSubmit={handleSubmit} submitting={submitting} submitLabel="Add subscription" />
+        <SubscriptionForm
+          key={preset ?? "blank"}
+          initial={initial}
+          onSubmit={handleSubmit}
+          submitting={submitting}
+          submitLabel="Add subscription"
+        />
       </div>
     </main>
   );

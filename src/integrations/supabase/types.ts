@@ -17,34 +17,40 @@ export type Database = {
       subscriptions: {
         Row: {
           billing_cycle: string
+          cancelled_at: string | null
           category: string
           cost: number
           created_at: string
           id: string
           name: string
           next_billing_date: string
+          status: string
           updated_at: string
           user_id: string
         }
         Insert: {
           billing_cycle?: string
+          cancelled_at?: string | null
           category?: string
           cost?: number
           created_at?: string
           id?: string
           name: string
           next_billing_date?: string
+          status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           billing_cycle?: string
+          cancelled_at?: string | null
           category?: string
           cost?: number
           created_at?: string
           id?: string
           name?: string
           next_billing_date?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
