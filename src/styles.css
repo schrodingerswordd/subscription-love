@@ -173,3 +173,113 @@
     color: transparent;
   }
 }
+
+/* ==========  Cyberpunk landing — scoped to .cyberpunk wrapper  ========== */
+.cyberpunk {
+  --cp-bg: #07060d;
+  --cp-bg-2: #0d0a1a;
+  --cp-fg: #f5f0ff;
+  --cp-muted: #9aa0c5;
+  --cp-magenta: #ff2bd6;
+  --cp-cyan: #00f0ff;
+  --cp-yellow: #fcee0a;
+  --cp-line: rgba(255, 43, 214, 0.25);
+  background-color: var(--cp-bg);
+  color: var(--cp-fg);
+  font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace;
+}
+.cyberpunk .cp-grid {
+  background-image:
+    linear-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 43, 214, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at top, black 30%, transparent 80%);
+}
+.cyberpunk .cp-scanlines {
+  background: repeating-linear-gradient(
+    to bottom, transparent 0, transparent 3px,
+    rgba(255, 255, 255, 0.025) 3px, rgba(255, 255, 255, 0.025) 4px
+  );
+}
+.cyberpunk .cp-neon-text {
+  color: var(--cp-yellow);
+  text-shadow: 0 0 8px rgba(252, 238, 10, 0.6), 0 0 24px rgba(255, 43, 214, 0.4);
+}
+.cyberpunk .cp-magenta { color: var(--cp-magenta); }
+.cyberpunk .cp-cyan { color: var(--cp-cyan); }
+.cyberpunk .cp-glitch { position: relative; display: inline-block; }
+.cyberpunk .cp-glitch::before,
+.cyberpunk .cp-glitch::after {
+  content: attr(data-text);
+  position: absolute; inset: 0; pointer-events: none;
+}
+.cyberpunk .cp-glitch::before {
+  color: var(--cp-magenta); transform: translate(2px, 0);
+  mix-blend-mode: screen;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+  animation: cp-glitch-1 3.2s infinite steps(2, end);
+}
+.cyberpunk .cp-glitch::after {
+  color: var(--cp-cyan); transform: translate(-2px, 0);
+  mix-blend-mode: screen;
+  clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+  animation: cp-glitch-2 2.6s infinite steps(2, end);
+}
+@keyframes cp-glitch-1 {
+  0%, 92%, 100% { transform: translate(2px, 0); }
+  93% { transform: translate(-3px, 1px); }
+  95% { transform: translate(4px, -1px); }
+  97% { transform: translate(-2px, 0); }
+}
+@keyframes cp-glitch-2 {
+  0%, 90%, 100% { transform: translate(-2px, 0); }
+  91% { transform: translate(3px, -1px); }
+  94% { transform: translate(-4px, 1px); }
+  96% { transform: translate(2px, 0); }
+}
+.cyberpunk .cp-card {
+  background:
+    linear-gradient(180deg, rgba(255, 43, 214, 0.06), rgba(0, 240, 255, 0.04)),
+    var(--cp-bg-2);
+  border: 1px solid var(--cp-line);
+  box-shadow: 0 0 0 1px rgba(0, 240, 255, 0.08), 0 20px 60px -20px rgba(255, 43, 214, 0.35);
+  position: relative;
+}
+.cyberpunk .cp-card::before {
+  content: ""; position: absolute; inset: -1px; pointer-events: none;
+  border: 1px solid transparent;
+  border-image: linear-gradient(135deg, var(--cp-magenta), var(--cp-cyan)) 1;
+  opacity: 0.4;
+}
+.cyberpunk .cp-btn-primary {
+  background: linear-gradient(90deg, var(--cp-magenta), var(--cp-cyan));
+  color: #0b0710; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; border: 0;
+  box-shadow: 0 0 24px rgba(255, 43, 214, 0.45), 0 0 48px rgba(0, 240, 255, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.cyberpunk .cp-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 32px rgba(255, 43, 214, 0.65), 0 0 64px rgba(0, 240, 255, 0.4);
+}
+.cyberpunk .cp-btn-ghost {
+  background: transparent; color: var(--cp-cyan);
+  border: 1px solid var(--cp-cyan);
+  text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+}
+.cyberpunk .cp-btn-ghost:hover {
+  background: rgba(0, 240, 255, 0.08);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+}
+.cyberpunk .cp-tag {
+  border: 1px solid var(--cp-line);
+  background: rgba(255, 43, 214, 0.08);
+  color: var(--cp-magenta);
+  text-transform: uppercase; letter-spacing: 0.16em;
+  font-size: 11px; padding: 4px 10px; border-radius: 999px;
+}
+.cyberpunk .cp-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cp-magenta), var(--cp-cyan), transparent);
+  opacity: 0.6;
+}
