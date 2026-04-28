@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppScanRouteImport } from './routes/app.scan'
 import { Route as AppDebugIconsRouteImport } from './routes/app.debug-icons'
+import { Route as AppAlertsRouteImport } from './routes/app.alerts'
 import { Route as AppAddRouteImport } from './routes/app.add'
 import { Route as AppEditIdRouteImport } from './routes/app.edit.$id'
 
@@ -66,6 +67,11 @@ const AppDebugIconsRoute = AppDebugIconsRouteImport.update({
   path: '/debug-icons',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAlertsRoute = AppAlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAddRoute = AppAddRouteImport.update({
   id: '/add',
   path: '/add',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
+  '/app/alerts': typeof AppAlertsRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
   '/app/scan': typeof AppScanRoute
   '/app/': typeof AppIndexRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
+  '/app/alerts': typeof AppAlertsRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
   '/app/scan': typeof AppScanRoute
   '/app': typeof AppIndexRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
+  '/app/alerts': typeof AppAlertsRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
   '/app/scan': typeof AppScanRoute
   '/app/': typeof AppIndexRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/signup'
     | '/app/add'
+    | '/app/alerts'
     | '/app/debug-icons'
     | '/app/scan'
     | '/app/'
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/signup'
     | '/app/add'
+    | '/app/alerts'
     | '/app/debug-icons'
     | '/app/scan'
     | '/app'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/signup'
     | '/app/add'
+    | '/app/alerts'
     | '/app/debug-icons'
     | '/app/scan'
     | '/app/'
@@ -231,6 +243,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugIconsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/alerts': {
+      id: '/app/alerts'
+      path: '/alerts'
+      fullPath: '/app/alerts'
+      preLoaderRoute: typeof AppAlertsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/add': {
       id: '/app/add'
       path: '/add'
@@ -250,6 +269,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAddRoute: typeof AppAddRoute
+  AppAlertsRoute: typeof AppAlertsRoute
   AppDebugIconsRoute: typeof AppDebugIconsRoute
   AppScanRoute: typeof AppScanRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -258,6 +278,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAddRoute: AppAddRoute,
+  AppAlertsRoute: AppAlertsRoute,
   AppDebugIconsRoute: AppDebugIconsRoute,
   AppScanRoute: AppScanRoute,
   AppIndexRoute: AppIndexRoute,
@@ -277,3 +298,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
