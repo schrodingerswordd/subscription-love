@@ -76,6 +76,8 @@ function AddSub() {
       billing_cycle: v.billing_cycle,
       next_billing_date: v.next_billing_date,
       category: v.category,
+      alerts_enabled: v.alerts_enabled,
+      alert_threshold_pct: v.alert_threshold_pct,
     });
     setSubmitting(false);
     if (error) {
