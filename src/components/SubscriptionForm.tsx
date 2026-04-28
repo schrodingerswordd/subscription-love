@@ -28,15 +28,23 @@ interface Props {
   submitting?: boolean;
   onSubmit: (v: SubscriptionFormValue) => void;
   submitLabel: string;
+  /** When true, shows price-alert configuration (Premium feature). */
+  showAlerts?: boolean;
+  /** When false (free tier), shows an upsell card instead of the inputs. */
+  alertsAvailable?: boolean;
 }
 
-export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel }: Props) {
+export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, showAlerts = false, alertsAvailable = true }: Props) {
   const navigate = useNavigate();
   const [name, setName] = useState(initial?.name ?? "");
   const [cost, setCost] = useState(initial?.cost?.toString() ?? "");
   const [cycle, setCycle] = useState<"weekly" | "monthly" | "yearly">(initial?.billing_cycle ?? "monthly");
   const [date, setDate] = useState(initial?.next_billing_date ?? new Date().toISOString().slice(0, 10));
   const [category, setCategory] = useState(initial?.category ?? "other");
+  const [alertsEnabled, setAlertsEnabled] = useState<boolean>(initial?.alerts_enabled ?? true);
+  const [thresholdPct, setThresholdPct] = useState<string>(
+    initial?.alert_threshold_pct !== undefined ? String(initial.alert_threshold_pct) : "0",
+  );
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Auto-detect category from service name
@@ -55,12 +63,15 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel }:
     e.preventDefault();
     const parsed = parseFloat(cost);
     if (!name.trim() || isNaN(parsed) || parsed < 0) return;
+    const threshold = Math.max(0, parseFloat(thresholdPct) || 0);
     onSubmit({
       name: name.trim(),
       cost: parsed,
       billing_cycle: cycle,
       next_billing_date: date,
       category,
+      alerts_enabled: alertsEnabled,
+      alert_threshold_pct: threshold,
     });
   }
 
