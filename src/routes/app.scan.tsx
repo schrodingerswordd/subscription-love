@@ -156,23 +156,14 @@ function ScanPage() {
 
   async function detectAndRecordPriceChanges(cands: RecurringCandidate[]) {
     if (!user) return;
-    const tracked = cands.filter((c) => c.alreadyTracked);
-    if (tracked.length === 0) return;
-    const { data: existing } = await supabase
-      .from("subscriptions")
-      .select("id,name,cost")
-      .eq("status", "active");
-    if (!existing) return;
-    const byName = new Map(existing.map((s) => [s.name.toLowerCase(), s]));
     let newAlertCandidates = 0;
-    for (const c of tracked) {
-      const sub = byName.get(c.name.toLowerCase());
-      if (!sub) continue;
-      const oldCost = Number(sub.cost);
+    for (const c of cands) {
+      if (!c.matchedSubscriptionId || c.matchedSubscriptionCost === undefined) continue;
+      const oldCost = c.matchedSubscriptionCost;
       // Only record meaningful diffs (avoid floating-point noise).
       if (Math.abs(oldCost - c.amount) >= 0.01) {
         await recordPrice({
-          subscriptionId: sub.id,
+          subscriptionId: c.matchedSubscriptionId,
           userId: user.id,
           cost: c.amount,
           source: "scan",
