@@ -26,4 +26,8 @@ export interface RecurringCandidate {
   category: string;
   /** True when this merchant already exists in the user's active subs. */
   alreadyTracked: boolean;
+  /** Detection confidence 0–100 (heuristic-based). */
+  confidence: number;
+  /** Short human-readable reason for the confidence score. */
+  confidenceReason: string;
 }
