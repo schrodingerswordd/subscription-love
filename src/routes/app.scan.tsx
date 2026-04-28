@@ -186,12 +186,7 @@ function ScanPage() {
       });
     }
   }
-    } catch (e) {
-      console.error(e);
-      setError(e instanceof Error ? e.message : "Failed to scan file");
-      setStage("idle");
-    }
-  }
+
 
   function toggle(name: string) {
     setSelected((prev) => {
