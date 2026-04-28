@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Pencil, Trash2, Calendar, Sparkles, Bell, Ban, RotateCcw, PiggyBank, ScanLine } from "lucide-react";
+import { Plus, Pencil, Trash2, Calendar, Sparkles, Bell, Ban, RotateCcw, PiggyBank, ScanLine, Crown } from "lucide-react";
+import { useSubscription, FREE_SUBSCRIPTION_LIMIT } from "@/hooks/useSubscription";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -44,6 +45,7 @@ export const Route = createFileRoute("/app/")({
 
 function Dashboard() {
   const { user } = useAuth();
+  const { isPremium } = useSubscription();
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -191,6 +193,25 @@ function Dashboard() {
           </div>
         </div>
       </section>
+
+      {!isPremium && activeSubs.length > 0 && (
+        <section className={"mt-4 rounded-2xl border p-4 " + (activeSubs.length >= FREE_SUBSCRIPTION_LIMIT ? "border-primary/40 bg-primary/5" : "border-border bg-card")}>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Free plan</p>
+              <p className="mt-0.5 text-sm font-semibold">
+                {Math.min(activeSubs.length, FREE_SUBSCRIPTION_LIMIT)} of {FREE_SUBSCRIPTION_LIMIT} tracked
+              </p>
+            </div>
+            <Button asChild size="sm" className="shrink-0 bg-gradient-primary hover:opacity-90">
+              <Link to="/pricing"><Crown className="h-3.5 w-3.5" /> Upgrade</Link>
+            </Button>
+          </div>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+            <div className="h-full bg-gradient-primary transition-all" style={{ width: `${Math.min(100, (activeSubs.length / FREE_SUBSCRIPTION_LIMIT) * 100)}%` }} />
+          </div>
+        </section>
+      )}
 
       {/* Renewal reminders */}
       {upcomingRenewals.length > 0 && (
