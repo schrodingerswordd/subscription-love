@@ -50,6 +50,7 @@ function EditSub() {
         category: data.category,
         alerts_enabled: data.alerts_enabled ?? true,
         alert_threshold_pct: Number(data.alert_threshold_pct ?? 0),
+        shared_with_count: Number((data as { shared_with_count?: number }).shared_with_count ?? 1),
       });
       setPreviousCost(Number(data.cost));
       setLoading(false);
@@ -70,6 +71,7 @@ function EditSub() {
         category: v.category,
         alerts_enabled: v.alerts_enabled,
         alert_threshold_pct: v.alert_threshold_pct,
+        shared_with_count: v.shared_with_count,
       })
       .eq("id", id);
     if (!error && previousCost !== null && previousCost !== v.cost) {

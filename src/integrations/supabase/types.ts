@@ -105,6 +105,7 @@ export type Database = {
           id: string
           name: string
           next_billing_date: string
+          shared_with_count: number
           status: string
           updated_at: string
           user_id: string
@@ -120,6 +121,7 @@ export type Database = {
           id?: string
           name: string
           next_billing_date?: string
+          shared_with_count?: number
           status?: string
           updated_at?: string
           user_id: string
@@ -135,6 +137,7 @@ export type Database = {
           id?: string
           name?: string
           next_billing_date?: string
+          shared_with_count?: number
           status?: string
           updated_at?: string
           user_id?: string
