@@ -71,6 +71,7 @@ function EditSub() {
         category: v.category,
         alerts_enabled: v.alerts_enabled,
         alert_threshold_pct: v.alert_threshold_pct,
+        shared_with_count: v.shared_with_count,
       })
       .eq("id", id);
     if (!error && previousCost !== null && previousCost !== v.cost) {
