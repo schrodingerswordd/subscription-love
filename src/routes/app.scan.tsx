@@ -362,6 +362,16 @@ function ScanPage() {
             </Button>
           </div>
 
+          <PriceChangeReview
+            items={getPriceChangeReviewItems()}
+            existingSubs={existingSubs}
+            overrides={priceMatchOverrides}
+            setOverrides={setPriceMatchOverrides}
+            recording={recordingPrices}
+            recorded={pricesRecorded}
+            onConfirm={confirmPriceChanges}
+          />
+
           {candidates.length === 0 ? (
             <div className="mt-8 rounded-xl border border-border bg-muted/30 p-8 text-center text-sm text-muted-foreground">
               <FileText className="mx-auto mb-3 h-8 w-8 opacity-50" />
