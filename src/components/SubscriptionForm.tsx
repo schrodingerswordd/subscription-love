@@ -68,6 +68,7 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
     const parsed = parseFloat(cost);
     if (!name.trim() || isNaN(parsed) || parsed < 0) return;
     const threshold = Math.max(0, parseFloat(thresholdPct) || 0);
+    const seats = Math.max(1, Math.min(50, Math.round(parseFloat(sharedWith) || 1)));
     onSubmit({
       name: name.trim(),
       cost: parsed,
@@ -76,6 +77,7 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
       category,
       alerts_enabled: alertsEnabled,
       alert_threshold_pct: threshold,
+      shared_with_count: seats,
     });
   }
 
