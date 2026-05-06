@@ -343,13 +343,13 @@ function scoreMatch(
 function matchExistingSubscription(
   candidate: { cleanName: string; rawDescriptor: string; presetName: string | null },
   existing: { id: string; name: string; cost: number }[],
-): { id: string; cost: number } | null {
-  let best: { id: string; cost: number; score: number } | null = null;
+): { id: string; name: string; cost: number; score: number } | null {
+  let best: { id: string; name: string; cost: number; score: number } | null = null;
   for (const sub of existing) {
     const score = scoreMatch(candidate, sub);
     if (score >= 80 && (!best || score > best.score)) {
-      best = { id: sub.id, cost: sub.cost, score };
+      best = { id: sub.id, name: sub.name, cost: sub.cost, score };
     }
   }
-  return best ? { id: best.id, cost: best.cost } : null;
+  return best;
 }
