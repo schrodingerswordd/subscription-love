@@ -417,9 +417,12 @@ function Dashboard() {
             </TabsList>
           </Tabs>
           <div className="flex items-center gap-2">
-            <Button asChild size="sm" variant="ghost" className="text-xs text-muted-foreground">
-              <Link to="/app/debug-icons">Debug icons</Link>
-            </Button>
+            {subs.length > 0 && (
+              <Button size="sm" variant="ghost" onClick={exportCsv} className="text-muted-foreground" title="Download CSV">
+                <Download className="h-4 w-4" />
+                <span className="ml-1.5 hidden sm:inline">Export</span>
+              </Button>
+            )}
             <Button asChild size="sm" variant="secondary">
               <Link to="/app/scan">
                 <ScanLine className="h-4 w-4" /> Scan
