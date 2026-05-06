@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Pencil, Trash2, Calendar, Sparkles, Bell, Ban, RotateCcw, PiggyBank, ScanLine, Crown, TrendingUp } from "lucide-react";
+import { Plus, Pencil, Trash2, Calendar, Sparkles, Bell, Ban, RotateCcw, PiggyBank, ScanLine, Crown, TrendingUp, ExternalLink } from "lucide-react";
+import { getCancelLink } from "@/lib/cancel-links";
 import { useSubscription, FREE_SUBSCRIPTION_LIMIT } from "@/hooks/useSubscription";
 import { usePriceAlerts } from "@/hooks/usePriceAlerts";
 import { Button } from "@/components/ui/button";
@@ -397,13 +398,30 @@ function Dashboard() {
                       </Button>
                     ) : (
                       <>
+                        {(() => {
+                          const link = getCancelLink(s.name);
+                          return (
+                            <Button
+                              asChild
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 text-muted-foreground hover:text-primary"
+                              title={link.kind === "official" ? "Open provider's cancel page" : "Search how to cancel"}
+                            >
+                              <a href={link.url} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                {link.kind === "official" ? "Cancel at provider" : "How to cancel"}
+                              </a>
+                            </Button>
+                          );
+                        })()}
                         <Button asChild variant="ghost" size="sm" className="h-8 text-muted-foreground">
                           <Link to="/app/edit/$id" params={{ id: s.id }}>
                             <Pencil className="h-3.5 w-3.5" /> Edit
                           </Link>
                         </Button>
                         <Button variant="ghost" size="sm" className="h-8 text-muted-foreground" onClick={() => handleCancel(s)}>
-                          <Ban className="h-3.5 w-3.5" /> Cancel
+                          <Ban className="h-3.5 w-3.5" /> Mark cancelled
                         </Button>
                       </>
                     )}

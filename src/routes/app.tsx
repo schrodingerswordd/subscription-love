@@ -5,6 +5,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { usePriceAlerts } from "@/hooks/usePriceAlerts";
 import { Button } from "@/components/ui/button";
 import { LogOut, Wallet, Crown, Bell } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { toast } from "sonner";
 
@@ -73,6 +74,7 @@ function AppLayout() {
                 </Link>
               </Button>
             )}
+            <ThemeToggle />
             <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground">
               <LogOut className="h-4 w-4" />
               <span className="ml-1.5 hidden sm:inline">Sign out</span>
