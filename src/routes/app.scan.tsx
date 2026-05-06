@@ -361,6 +361,12 @@ function ScanPage() {
                             <Badge variant="outline" className={`gap-1 text-xs ${confColor}`}>
                               <ConfIcon className="h-3 w-3" /> {conf}% confidence
                             </Badge>
+                            {c.alreadyTracked && c.matchedSubscriptionName && (
+                              <Badge variant="outline" className="gap-1 text-xs">
+                                matched: {c.matchedSubscriptionName}
+                                {typeof c.matchScore === "number" && ` · ${c.matchScore}%`}
+                              </Badge>
+                            )}
                           </div>
                           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
                             <span className="inline-flex items-center gap-1">
