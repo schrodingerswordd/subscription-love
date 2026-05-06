@@ -46,6 +46,9 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
   const [thresholdPct, setThresholdPct] = useState<string>(
     initial?.alert_threshold_pct !== undefined ? String(initial.alert_threshold_pct) : "0",
   );
+  const [sharedWith, setSharedWith] = useState<string>(
+    initial?.shared_with_count ? String(initial.shared_with_count) : "1",
+  );
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Auto-detect category from service name
