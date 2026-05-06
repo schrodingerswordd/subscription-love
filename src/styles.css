@@ -143,6 +143,20 @@
   --ring: oklch(0.70 0.20 290);
 }
 
+/* Neon — subtle cyberpunk accent on top of the dark base */
+.neon {
+  --primary: oklch(0.72 0.30 330);          /* hot magenta */
+  --primary-foreground: oklch(0.10 0.03 280);
+  --primary-glow: oklch(0.82 0.25 200);     /* cyan glow */
+  --accent: oklch(0.32 0.15 200);
+  --accent-foreground: oklch(0.95 0.02 200);
+  --ring: oklch(0.72 0.30 330);
+  --gradient-primary: linear-gradient(135deg, oklch(0.72 0.30 330), oklch(0.78 0.22 200));
+  --gradient-hero: linear-gradient(135deg, oklch(0.72 0.30 330) 0%, oklch(0.55 0.25 290) 50%, oklch(0.78 0.22 200) 100%);
+  --shadow-elegant: 0 10px 40px -8px color-mix(in oklab, oklch(0.72 0.30 330) 55%, transparent);
+  --shadow-glow: 0 0 60px color-mix(in oklab, oklch(0.78 0.22 200) 40%, transparent);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
