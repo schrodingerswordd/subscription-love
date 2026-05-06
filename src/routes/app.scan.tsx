@@ -169,10 +169,18 @@ function ScanPage() {
       );
       setStage("results");
 
-      // For already-tracked candidates whose detected amount differs from
-      // the saved cost, record a new price observation. The DB trigger will
-      // emit a price_alert if the change exceeds the user's threshold.
-      void detectAndRecordPriceChanges(result.candidates);
+      // Pre-fill the price-change review with the auto-detected matches.
+      // Users can confirm, change the matched subscription, or skip before
+      // we actually record any price observations.
+      const prefill: Record<string, string> = {};
+      for (const c of result.candidates) {
+        if (c.matchedSubscriptionId && c.matchedSubscriptionCost !== undefined &&
+            Math.abs(c.matchedSubscriptionCost - c.amount) >= 0.01) {
+          prefill[c.name] = c.matchedSubscriptionId;
+        }
+      }
+      setPriceMatchOverrides(prefill);
+      setPricesRecorded(false);
     } catch (e) {
       console.error(e);
       setError(e instanceof Error ? e.message : "Failed to scan file");
@@ -180,27 +188,45 @@ function ScanPage() {
     }
   }
 
-  async function detectAndRecordPriceChanges(cands: RecurringCandidate[]) {
+  // Candidates whose detected amount looks like a price change for some
+  // existing subscription — either auto-matched, or manually selectable.
+  function getPriceChangeReviewItems() {
+    return candidates
+      .map((c) => {
+        const autoMatch = c.matchedSubscriptionId && c.matchedSubscriptionCost !== undefined &&
+          Math.abs(c.matchedSubscriptionCost - c.amount) >= 0.01;
+        if (!autoMatch) return null;
+        return c;
+      })
+      .filter((c): c is RecurringCandidate => c !== null);
+  }
+
+  async function confirmPriceChanges() {
     if (!user) return;
-    let newAlertCandidates = 0;
-    for (const c of cands) {
-      if (!c.matchedSubscriptionId || c.matchedSubscriptionCost === undefined) continue;
-      const oldCost = c.matchedSubscriptionCost;
-      // Only record meaningful diffs (avoid floating-point noise).
-      if (Math.abs(oldCost - c.amount) >= 0.01) {
-        await recordPrice({
-          subscriptionId: c.matchedSubscriptionId,
-          userId: user.id,
-          cost: c.amount,
-          source: "scan",
-        });
-        newAlertCandidates += 1;
-      }
+    setRecordingPrices(true);
+    let recorded = 0;
+    for (const c of getPriceChangeReviewItems()) {
+      const choice = priceMatchOverrides[c.name];
+      if (!choice || choice === "__skip__") continue;
+      const sub = existingSubs.find((s) => s.id === choice);
+      if (!sub) continue;
+      if (Math.abs(sub.cost - c.amount) < 0.01) continue;
+      await recordPrice({
+        subscriptionId: choice,
+        userId: user.id,
+        cost: c.amount,
+        source: "scan",
+      });
+      recorded += 1;
     }
-    if (newAlertCandidates > 0) {
-      toast.message(`${newAlertCandidates} price change${newAlertCandidates === 1 ? "" : "s"} detected`, {
+    setRecordingPrices(false);
+    setPricesRecorded(true);
+    if (recorded > 0) {
+      toast.success(`${recorded} price change${recorded === 1 ? "" : "s"} recorded`, {
         description: "Check your price alerts.",
       });
+    } else {
+      toast.message("No price changes recorded");
     }
   }
 
