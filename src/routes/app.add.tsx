@@ -78,6 +78,7 @@ function AddSub() {
       category: v.category,
       alerts_enabled: v.alerts_enabled,
       alert_threshold_pct: v.alert_threshold_pct,
+      shared_with_count: v.shared_with_count,
     });
     setSubmitting(false);
     if (error) {
