@@ -10,7 +10,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CATEGORIES, SERVICE_PRESETS, getServicePreset, formatCurrency } from "@/lib/services";
 import { ServiceAvatar } from "@/components/ServiceAvatar";
 import { Switch } from "@/components/ui/switch";
-import { Bell, Crown } from "lucide-react";
+import { Bell, Crown, Users } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 export interface SubscriptionFormValue {
@@ -21,6 +21,7 @@ export interface SubscriptionFormValue {
   category: string;
   alerts_enabled: boolean;
   alert_threshold_pct: number;
+  shared_with_count: number;
 }
 
 interface Props {
