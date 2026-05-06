@@ -28,8 +28,12 @@ export interface RecurringCandidate {
   alreadyTracked: boolean;
   /** ID of the matched existing subscription (when alreadyTracked is true). */
   matchedSubscriptionId?: string;
+  /** Name of the matched existing subscription (as saved by the user). */
+  matchedSubscriptionName?: string;
   /** Saved cost on the matched subscription, for price-change comparison. */
   matchedSubscriptionCost?: number;
+  /** Confidence 0–100 that this candidate matches the existing subscription. */
+  matchScore?: number;
   /** Detection confidence 0–100 (heuristic-based). */
   confidence: number;
   /** Short human-readable reason for the confidence score. */
