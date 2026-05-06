@@ -666,7 +666,7 @@ function PriceChangeReview({
   );
 }
 
-
+function ScanPaywall() {
   return (
     <main className="mx-auto max-w-md px-4 pt-4">
       <Link to="/app" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
