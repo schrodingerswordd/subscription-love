@@ -191,6 +191,36 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
         </Select>
       </div>
 
+      {/* Family / shared plan */}
+      <div className="space-y-1.5 rounded-xl border border-border bg-muted/30 p-4">
+        <div className="flex items-start gap-2">
+          <Users className="mt-0.5 h-4 w-4 text-primary" />
+          <div className="min-w-0 flex-1">
+            <Label htmlFor="shared" className="text-sm font-semibold">Sharing this plan?</Label>
+            <p className="text-xs text-muted-foreground">
+              Split the cost across people. Only your share counts toward your monthly total.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Input
+            id="shared"
+            type="number"
+            min={1}
+            max={50}
+            step={1}
+            value={sharedWith}
+            onChange={(e) => setSharedWith(e.target.value)}
+            className="w-20"
+          />
+          <span className="text-sm text-muted-foreground">
+            {Number(sharedWith) > 1
+              ? `${formatCurrency((parseFloat(cost) || 0) / Number(sharedWith))} each / ${cycle === "weekly" ? "wk" : cycle === "yearly" ? "yr" : "mo"}`
+              : "Just me"}
+          </span>
+        </div>
+      </div>
+
       {showAlerts && (
         alertsAvailable ? (
           <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
