@@ -81,14 +81,14 @@ function Dashboard() {
   const cancelledSubs = useMemo(() => subs.filter((s) => s.status === "cancelled"), [subs]);
 
   const totalMonthly = useMemo(
-    () => activeSubs.reduce((sum, s) => sum + toMonthly(Number(s.cost), s.billing_cycle), 0),
+    () => activeSubs.reduce((sum, s) => sum + toMonthly(myShare(s), s.billing_cycle), 0),
     [activeSubs],
   );
   const yearly = totalMonthly * 12;
 
-  // Monthly savings = sum of monthly equivalents for cancelled subs
+  // Monthly savings = sum of monthly equivalents for cancelled subs (your share)
   const monthlySavings = useMemo(
-    () => cancelledSubs.reduce((sum, s) => sum + toMonthly(Number(s.cost), s.billing_cycle), 0),
+    () => cancelledSubs.reduce((sum, s) => sum + toMonthly(myShare(s), s.billing_cycle), 0),
     [cancelledSubs],
   );
   // Total saved since cancellation date
@@ -99,9 +99,23 @@ function Dashboard() {
         0,
         (Date.now() - new Date(s.cancelled_at).getTime()) / (1000 * 60 * 60 * 24 * 30.4375),
       );
-      return sum + toMonthly(Number(s.cost), s.billing_cycle) * monthsSince;
+      return sum + toMonthly(myShare(s), s.billing_cycle) * monthsSince;
     }, 0);
   }, [cancelledSubs]);
+
+  // "Biggest leak" — costliest active subscription this month (your share).
+  const biggestLeak = useMemo(() => {
+    if (activeSubs.length < 2) return null;
+    let top: Subscription | null = null;
+    let topMonthly = 0;
+    for (const s of activeSubs) {
+      const m = toMonthly(myShare(s), s.billing_cycle);
+      if (m > topMonthly) { top = s; topMonthly = m; }
+    }
+    if (!top) return null;
+    const share = totalMonthly > 0 ? topMonthly / totalMonthly : 0;
+    return { sub: top, monthly: topMonthly, share };
+  }, [activeSubs, totalMonthly]);
 
   // Renewals due within REMINDER_DAYS (active only)
   const upcomingRenewals = useMemo(() => {
