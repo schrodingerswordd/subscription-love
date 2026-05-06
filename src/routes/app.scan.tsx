@@ -532,7 +532,141 @@ function ScanPage() {
   );
 }
 
-function ScanPaywall() {
+interface PriceChangeReviewProps {
+  items: RecurringCandidate[];
+  existingSubs: { id: string; name: string; cost: number }[];
+  overrides: Record<string, string>;
+  setOverrides: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  recording: boolean;
+  recorded: boolean;
+  onConfirm: () => void;
+}
+
+function PriceChangeReview({
+  items, existingSubs, overrides, setOverrides, recording, recorded, onConfirm,
+}: PriceChangeReviewProps) {
+  if (items.length === 0) return null;
+
+  const pendingCount = items.filter((c) => {
+    const v = overrides[c.name];
+    return v && v !== "__skip__";
+  }).length;
+
+  return (
+    <div className="mt-5 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4">
+      <div className="flex items-start gap-2">
+        <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-bold">Confirm price changes</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            We detected {items.length} charge{items.length === 1 ? "" : "s"} that may differ from
+            what you have saved. Confirm the matched subscription, pick a different one, or skip
+            before we record the change.
+          </p>
+        </div>
+      </div>
+
+      <ul className="mt-3 space-y-2">
+        {items.map((c) => {
+          const choice = overrides[c.name] ?? "";
+          const matchedSub = existingSubs.find((s) => s.id === choice);
+          const oldCost = matchedSub?.cost;
+          const isSkip = choice === "__skip__";
+          const diff = oldCost !== undefined ? c.amount - oldCost : null;
+          const direction = diff === null ? null : diff > 0 ? "up" : "down";
+
+          return (
+            <li
+              key={c.name}
+              className="rounded-xl border border-border bg-background/70 p-3"
+            >
+              <div className="flex items-start gap-3">
+                <ServiceAvatar name={c.name} size={32} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{c.name}</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    Detected {formatCurrency(c.amount)}
+                    {oldCost !== undefined && !isSkip && (
+                      <>
+                        {" · was "}{formatCurrency(oldCost)}{" "}
+                        <span
+                          className={
+                            "inline-flex items-center gap-0.5 font-medium " +
+                            (direction === "up" ? "text-amber-600" : "text-emerald-600")
+                          }
+                        >
+                          {direction === "up" ? (
+                            <TrendingUp className="h-3 w-3" />
+                          ) : (
+                            <TrendingDown className="h-3 w-3" />
+                          )}
+                          {diff !== null && (diff > 0 ? "+" : "")}
+                          {formatCurrency(diff ?? 0)}
+                        </span>
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Select
+                  value={choice}
+                  onValueChange={(v) => setOverrides((p) => ({ ...p, [c.name]: v }))}
+                  disabled={recorded}
+                >
+                  <SelectTrigger className="h-8 flex-1 min-w-[180px] text-xs">
+                    <SelectValue placeholder="Pick a subscription…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {existingSubs.map((s) => (
+                      <SelectItem key={s.id} value={s.id} className="text-xs">
+                        {s.name} ({formatCurrency(s.cost)})
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="__skip__" className="text-xs">
+                      Skip — not a price change
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {isSkip && (
+                  <Badge variant="outline" className="gap-1 text-[10px]">
+                    <X className="h-3 w-3" /> skipped
+                  </Badge>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <p className="text-[11px] text-muted-foreground">
+          {recorded
+            ? "Price changes recorded."
+            : `${pendingCount} of ${items.length} will be recorded.`}
+        </p>
+        <Button
+          size="sm"
+          onClick={onConfirm}
+          disabled={recording || recorded}
+          className="gap-1"
+        >
+          {recording ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : recorded ? (
+            <Check className="h-3.5 w-3.5" />
+          ) : (
+            <Check className="h-3.5 w-3.5" />
+          )}
+          {recorded ? "Recorded" : "Confirm price changes"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+
   return (
     <main className="mx-auto max-w-md px-4 pt-4">
       <Link to="/app" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
