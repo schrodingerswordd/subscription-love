@@ -31,6 +31,13 @@ interface Subscription {
   created_at: string;
   status: "active" | "cancelled";
   cancelled_at: string | null;
+  shared_with_count: number;
+}
+
+/** Cost split per share (defaults to full cost when not shared). */
+function myShare(s: { cost: number | string; shared_with_count?: number | null }): number {
+  const seats = Math.max(1, Number(s.shared_with_count ?? 1));
+  return Number(s.cost) / seats;
 }
 
 const REMINDER_DAYS = 3;
