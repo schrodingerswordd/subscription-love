@@ -1,13 +1,16 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Upload, FileText, Loader2, ArrowLeft, Check, AlertCircle, Sparkles, Plus, Eye,
-  ShieldCheck, ShieldAlert, Shield, Crown,
+  ShieldCheck, ShieldAlert, Shield, Crown, TrendingUp, TrendingDown, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { ServiceAvatar } from "@/components/ServiceAvatar";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,6 +68,27 @@ function ScanPage() {
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
+  // Existing subs for the price-change correction dropdown.
+  type ExistingSub = { id: string; name: string; cost: number };
+  const [existingSubs, setExistingSubs] = useState<ExistingSub[]>([]);
+
+  // Per-candidate review of detected price changes.
+  // value: subscription id to record against, "__skip__" to skip, or undefined (unset).
+  const [priceMatchOverrides, setPriceMatchOverrides] = useState<Record<string, string>>({});
+  const [recordingPrices, setRecordingPrices] = useState(false);
+  const [pricesRecorded, setPricesRecorded] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    void supabase
+      .from("subscriptions")
+      .select("id,name,cost")
+      .eq("status", "active")
+      .then(({ data }) => {
+        if (data) setExistingSubs(data.map((r) => ({ id: r.id, name: r.name, cost: Number(r.cost) })));
+      });
+  }, [user]);
+
   function reset() {
     setStage("idle");
     setStatusMsg("");
@@ -73,6 +97,8 @@ function ScanPage() {
     setCycleOverrides({});
     setTxnCount(0);
     setError(null);
+    setPriceMatchOverrides({});
+    setPricesRecorded(false);
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -143,10 +169,18 @@ function ScanPage() {
       );
       setStage("results");
 
-      // For already-tracked candidates whose detected amount differs from
-      // the saved cost, record a new price observation. The DB trigger will
-      // emit a price_alert if the change exceeds the user's threshold.
-      void detectAndRecordPriceChanges(result.candidates);
+      // Pre-fill the price-change review with the auto-detected matches.
+      // Users can confirm, change the matched subscription, or skip before
+      // we actually record any price observations.
+      const prefill: Record<string, string> = {};
+      for (const c of result.candidates) {
+        if (c.matchedSubscriptionId && c.matchedSubscriptionCost !== undefined &&
+            Math.abs(c.matchedSubscriptionCost - c.amount) >= 0.01) {
+          prefill[c.name] = c.matchedSubscriptionId;
+        }
+      }
+      setPriceMatchOverrides(prefill);
+      setPricesRecorded(false);
     } catch (e) {
       console.error(e);
       setError(e instanceof Error ? e.message : "Failed to scan file");
@@ -154,27 +188,45 @@ function ScanPage() {
     }
   }
 
-  async function detectAndRecordPriceChanges(cands: RecurringCandidate[]) {
+  // Candidates whose detected amount looks like a price change for some
+  // existing subscription — either auto-matched, or manually selectable.
+  function getPriceChangeReviewItems() {
+    return candidates
+      .map((c) => {
+        const autoMatch = c.matchedSubscriptionId && c.matchedSubscriptionCost !== undefined &&
+          Math.abs(c.matchedSubscriptionCost - c.amount) >= 0.01;
+        if (!autoMatch) return null;
+        return c;
+      })
+      .filter((c): c is RecurringCandidate => c !== null);
+  }
+
+  async function confirmPriceChanges() {
     if (!user) return;
-    let newAlertCandidates = 0;
-    for (const c of cands) {
-      if (!c.matchedSubscriptionId || c.matchedSubscriptionCost === undefined) continue;
-      const oldCost = c.matchedSubscriptionCost;
-      // Only record meaningful diffs (avoid floating-point noise).
-      if (Math.abs(oldCost - c.amount) >= 0.01) {
-        await recordPrice({
-          subscriptionId: c.matchedSubscriptionId,
-          userId: user.id,
-          cost: c.amount,
-          source: "scan",
-        });
-        newAlertCandidates += 1;
-      }
+    setRecordingPrices(true);
+    let recorded = 0;
+    for (const c of getPriceChangeReviewItems()) {
+      const choice = priceMatchOverrides[c.name];
+      if (!choice || choice === "__skip__") continue;
+      const sub = existingSubs.find((s) => s.id === choice);
+      if (!sub) continue;
+      if (Math.abs(sub.cost - c.amount) < 0.01) continue;
+      await recordPrice({
+        subscriptionId: choice,
+        userId: user.id,
+        cost: c.amount,
+        source: "scan",
+      });
+      recorded += 1;
     }
-    if (newAlertCandidates > 0) {
-      toast.message(`${newAlertCandidates} price change${newAlertCandidates === 1 ? "" : "s"} detected`, {
+    setRecordingPrices(false);
+    setPricesRecorded(true);
+    if (recorded > 0) {
+      toast.success(`${recorded} price change${recorded === 1 ? "" : "s"} recorded`, {
         description: "Check your price alerts.",
       });
+    } else {
+      toast.message("No price changes recorded");
     }
   }
 
@@ -309,6 +361,16 @@ function ScanPage() {
               Scan another file
             </Button>
           </div>
+
+          <PriceChangeReview
+            items={getPriceChangeReviewItems()}
+            existingSubs={existingSubs}
+            overrides={priceMatchOverrides}
+            setOverrides={setPriceMatchOverrides}
+            recording={recordingPrices}
+            recorded={pricesRecorded}
+            onConfirm={confirmPriceChanges}
+          />
 
           {candidates.length === 0 ? (
             <div className="mt-8 rounded-xl border border-border bg-muted/30 p-8 text-center text-sm text-muted-foreground">
@@ -467,6 +529,140 @@ function ScanPage() {
         </div>
       )}
     </main>
+  );
+}
+
+interface PriceChangeReviewProps {
+  items: RecurringCandidate[];
+  existingSubs: { id: string; name: string; cost: number }[];
+  overrides: Record<string, string>;
+  setOverrides: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  recording: boolean;
+  recorded: boolean;
+  onConfirm: () => void;
+}
+
+function PriceChangeReview({
+  items, existingSubs, overrides, setOverrides, recording, recorded, onConfirm,
+}: PriceChangeReviewProps) {
+  if (items.length === 0) return null;
+
+  const pendingCount = items.filter((c) => {
+    const v = overrides[c.name];
+    return v && v !== "__skip__";
+  }).length;
+
+  return (
+    <div className="mt-5 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-4">
+      <div className="flex items-start gap-2">
+        <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-bold">Confirm price changes</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            We detected {items.length} charge{items.length === 1 ? "" : "s"} that may differ from
+            what you have saved. Confirm the matched subscription, pick a different one, or skip
+            before we record the change.
+          </p>
+        </div>
+      </div>
+
+      <ul className="mt-3 space-y-2">
+        {items.map((c) => {
+          const choice = overrides[c.name] ?? "";
+          const matchedSub = existingSubs.find((s) => s.id === choice);
+          const oldCost = matchedSub?.cost;
+          const isSkip = choice === "__skip__";
+          const diff = oldCost !== undefined ? c.amount - oldCost : null;
+          const direction = diff === null ? null : diff > 0 ? "up" : "down";
+
+          return (
+            <li
+              key={c.name}
+              className="rounded-xl border border-border bg-background/70 p-3"
+            >
+              <div className="flex items-start gap-3">
+                <ServiceAvatar name={c.name} size={32} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{c.name}</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    Detected {formatCurrency(c.amount)}
+                    {oldCost !== undefined && !isSkip && (
+                      <>
+                        {" · was "}{formatCurrency(oldCost)}{" "}
+                        <span
+                          className={
+                            "inline-flex items-center gap-0.5 font-medium " +
+                            (direction === "up" ? "text-amber-600" : "text-emerald-600")
+                          }
+                        >
+                          {direction === "up" ? (
+                            <TrendingUp className="h-3 w-3" />
+                          ) : (
+                            <TrendingDown className="h-3 w-3" />
+                          )}
+                          {diff !== null && (diff > 0 ? "+" : "")}
+                          {formatCurrency(diff ?? 0)}
+                        </span>
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Select
+                  value={choice}
+                  onValueChange={(v) => setOverrides((p) => ({ ...p, [c.name]: v }))}
+                  disabled={recorded}
+                >
+                  <SelectTrigger className="h-8 flex-1 min-w-[180px] text-xs">
+                    <SelectValue placeholder="Pick a subscription…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {existingSubs.map((s) => (
+                      <SelectItem key={s.id} value={s.id} className="text-xs">
+                        {s.name} ({formatCurrency(s.cost)})
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="__skip__" className="text-xs">
+                      Skip — not a price change
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {isSkip && (
+                  <Badge variant="outline" className="gap-1 text-[10px]">
+                    <X className="h-3 w-3" /> skipped
+                  </Badge>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <p className="text-[11px] text-muted-foreground">
+          {recorded
+            ? "Price changes recorded."
+            : `${pendingCount} of ${items.length} will be recorded.`}
+        </p>
+        <Button
+          size="sm"
+          onClick={onConfirm}
+          disabled={recording || recorded}
+          className="gap-1"
+        >
+          {recording ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : recorded ? (
+            <Check className="h-3.5 w-3.5" />
+          ) : (
+            <Check className="h-3.5 w-3.5" />
+          )}
+          {recorded ? "Recorded" : "Confirm price changes"}
+        </Button>
+      </div>
+    </div>
   );
 }
 
