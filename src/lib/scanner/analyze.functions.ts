@@ -260,7 +260,9 @@ export const analyzeStatement = createServerFn({ method: "POST" })
         category: finalCategory,
         alreadyTracked: !!match,
         matchedSubscriptionId: match?.id,
+        matchedSubscriptionName: match?.name,
         matchedSubscriptionCost: match?.cost,
+        matchScore: match?.score,
       };
     });
 
