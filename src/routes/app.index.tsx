@@ -457,6 +457,11 @@ function Dashboard() {
                         <Badge variant="secondary" className="hidden text-xs sm:inline-flex">
                           <cat.icon className="h-3 w-3" /> {cat.label}
                         </Badge>
+                        {(s.shared_with_count ?? 1) > 1 && (
+                          <Badge variant="outline" className="gap-1 text-[10px]" title={`Split ${s.shared_with_count} ways`}>
+                            <Users className="h-3 w-3" /> /{s.shared_with_count}
+                          </Badge>
+                        )}
                       </div>
                       <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
@@ -469,7 +474,14 @@ function Dashboard() {
                     </div>
                     <div className="flex flex-col items-end gap-0.5">
                       <p className="font-bold tabular-nums">{formatCurrency(Number(s.cost))}</p>
-                      <p className="text-xs text-muted-foreground">/ {s.billing_cycle === "yearly" ? "yr" : s.billing_cycle === "weekly" ? "wk" : "mo"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        / {s.billing_cycle === "yearly" ? "yr" : s.billing_cycle === "weekly" ? "wk" : "mo"}
+                        {(s.shared_with_count ?? 1) > 1 && (
+                          <span className="block text-[10px] text-primary">
+                            you: {formatCurrency(myShare(s))}
+                          </span>
+                        )}
+                      </p>
                     </div>
                   </div>
                   <div className="mt-2 flex items-center justify-end gap-1 sm:mt-1">
