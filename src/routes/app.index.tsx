@@ -171,7 +171,7 @@ function Dashboard() {
       .single();
     if (error) { toast.error(error.message); return; }
     setSubs((prev) => prev.map((x) => (x.id === s.id ? (data as Subscription) : x)));
-    toast.success(`${s.name} cancelled — saving ${formatCurrency(toMonthly(Number(s.cost), s.billing_cycle))}/mo`);
+    toast.success(`${s.name} cancelled — saving ${formatCurrency(toMonthly(myShare(s), s.billing_cycle))}/mo`);
   }
 
   async function handleReactivate(s: Subscription) {
