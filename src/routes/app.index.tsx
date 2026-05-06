@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Pencil, Trash2, Calendar, Sparkles, Bell, Ban, RotateCcw, PiggyBank, ScanLine, Crown, TrendingUp, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, Calendar, Sparkles, Bell, Ban, RotateCcw, PiggyBank, ScanLine, Crown, TrendingUp, ExternalLink, Flame, Download, Users } from "lucide-react";
 import { getCancelLink } from "@/lib/cancel-links";
 import { useSubscription, FREE_SUBSCRIPTION_LIMIT } from "@/hooks/useSubscription";
 import { usePriceAlerts } from "@/hooks/usePriceAlerts";
@@ -31,6 +31,13 @@ interface Subscription {
   created_at: string;
   status: "active" | "cancelled";
   cancelled_at: string | null;
+  shared_with_count: number;
+}
+
+/** Cost split per share (defaults to full cost when not shared). */
+function myShare(s: { cost: number | string; shared_with_count?: number | null }): number {
+  const seats = Math.max(1, Number(s.shared_with_count ?? 1));
+  return Number(s.cost) / seats;
 }
 
 const REMINDER_DAYS = 3;
@@ -74,14 +81,14 @@ function Dashboard() {
   const cancelledSubs = useMemo(() => subs.filter((s) => s.status === "cancelled"), [subs]);
 
   const totalMonthly = useMemo(
-    () => activeSubs.reduce((sum, s) => sum + toMonthly(Number(s.cost), s.billing_cycle), 0),
+    () => activeSubs.reduce((sum, s) => sum + toMonthly(myShare(s), s.billing_cycle), 0),
     [activeSubs],
   );
   const yearly = totalMonthly * 12;
 
-  // Monthly savings = sum of monthly equivalents for cancelled subs
+  // Monthly savings = sum of monthly equivalents for cancelled subs (your share)
   const monthlySavings = useMemo(
-    () => cancelledSubs.reduce((sum, s) => sum + toMonthly(Number(s.cost), s.billing_cycle), 0),
+    () => cancelledSubs.reduce((sum, s) => sum + toMonthly(myShare(s), s.billing_cycle), 0),
     [cancelledSubs],
   );
   // Total saved since cancellation date
@@ -92,9 +99,23 @@ function Dashboard() {
         0,
         (Date.now() - new Date(s.cancelled_at).getTime()) / (1000 * 60 * 60 * 24 * 30.4375),
       );
-      return sum + toMonthly(Number(s.cost), s.billing_cycle) * monthsSince;
+      return sum + toMonthly(myShare(s), s.billing_cycle) * monthsSince;
     }, 0);
   }, [cancelledSubs]);
+
+  // "Biggest leak" — costliest active subscription this month (your share).
+  const biggestLeak = useMemo(() => {
+    if (activeSubs.length < 2) return null;
+    let top: Subscription | null = null;
+    let topMonthly = 0;
+    for (const s of activeSubs) {
+      const m = toMonthly(myShare(s), s.billing_cycle);
+      if (m > topMonthly) { top = s; topMonthly = m; }
+    }
+    if (!top) return null;
+    const share = totalMonthly > 0 ? topMonthly / totalMonthly : 0;
+    return { sub: top, monthly: topMonthly, share };
+  }, [activeSubs, totalMonthly]);
 
   // Renewals due within REMINDER_DAYS (active only)
   const upcomingRenewals = useMemo(() => {
@@ -127,7 +148,7 @@ function Dashboard() {
       const value = subs
         .filter((s) => new Date(s.created_at) < cutoff)
         .filter((s) => s.status === "active" || (s.cancelled_at && new Date(s.cancelled_at) >= cutoff))
-        .reduce((sum, s) => sum + toMonthly(Number(s.cost), s.billing_cycle), 0);
+        .reduce((sum, s) => sum + toMonthly(myShare(s), s.billing_cycle), 0);
       months.push({ label, value: Math.round(value * 100) / 100 });
     }
     return months;
@@ -150,7 +171,7 @@ function Dashboard() {
       .single();
     if (error) { toast.error(error.message); return; }
     setSubs((prev) => prev.map((x) => (x.id === s.id ? (data as Subscription) : x)));
-    toast.success(`${s.name} cancelled — saving ${formatCurrency(toMonthly(Number(s.cost), s.billing_cycle))}/mo`);
+    toast.success(`${s.name} cancelled — saving ${formatCurrency(toMonthly(myShare(s), s.billing_cycle))}/mo`);
   }
 
   async function handleReactivate(s: Subscription) {
@@ -163,6 +184,35 @@ function Dashboard() {
     if (error) { toast.error(error.message); return; }
     setSubs((prev) => prev.map((x) => (x.id === s.id ? (data as Subscription) : x)));
     toast.success(`${s.name} reactivated`);
+  }
+
+  function exportCsv() {
+    const headers = ["name", "category", "cost", "billing_cycle", "shared_with_count", "your_share", "monthly_equivalent", "next_billing_date", "status", "cancelled_at", "created_at"];
+    const rows = subs.map((s) => [
+      s.name,
+      s.category,
+      Number(s.cost).toFixed(2),
+      s.billing_cycle,
+      String(s.shared_with_count ?? 1),
+      myShare(s).toFixed(2),
+      toMonthly(myShare(s), s.billing_cycle).toFixed(2),
+      s.next_billing_date,
+      s.status,
+      s.cancelled_at ?? "",
+      s.created_at,
+    ]);
+    const escape = (v: string) => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+    const csv = [headers, ...rows].map((row) => row.map(escape).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `subtrack-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${subs.length} subscription${subs.length === 1 ? "" : "s"}`);
   }
 
   const visibleSubs = tab === "active" ? activeSubs : cancelledSubs;
@@ -212,6 +262,34 @@ function Dashboard() {
           </div>
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
             <div className="h-full bg-gradient-primary transition-all" style={{ width: `${Math.min(100, (activeSubs.length / FREE_SUBSCRIPTION_LIMIT) * 100)}%` }} />
+          </div>
+        </section>
+      )}
+
+      {/* Biggest leak insight */}
+      {biggestLeak && (
+        <section className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-4 dark:border-orange-900/40 dark:bg-orange-950/30">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/60 dark:text-orange-300">
+              <Flame className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium uppercase tracking-wider text-orange-700 dark:text-orange-300">
+                Biggest leak this month
+              </p>
+              <div className="mt-0.5 flex items-center gap-2">
+                <ServiceAvatar name={biggestLeak.sub.name} size={20} />
+                <p className="truncate text-sm font-semibold">{biggestLeak.sub.name}</p>
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {formatCurrency(biggestLeak.monthly)}/mo · {Math.round(biggestLeak.share * 100)}% of total
+                </span>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="sm" className="shrink-0">
+              <a href={getCancelLink(biggestLeak.sub.name).url} target="_blank" rel="noopener noreferrer">
+                Cancel
+              </a>
+            </Button>
           </div>
         </section>
       )}
@@ -339,9 +417,12 @@ function Dashboard() {
             </TabsList>
           </Tabs>
           <div className="flex items-center gap-2">
-            <Button asChild size="sm" variant="ghost" className="text-xs text-muted-foreground">
-              <Link to="/app/debug-icons">Debug icons</Link>
-            </Button>
+            {subs.length > 0 && (
+              <Button size="sm" variant="ghost" onClick={exportCsv} className="text-muted-foreground" title="Download CSV">
+                <Download className="h-4 w-4" />
+                <span className="ml-1.5 hidden sm:inline">Export</span>
+              </Button>
+            )}
             <Button asChild size="sm" variant="secondary">
               <Link to="/app/scan">
                 <ScanLine className="h-4 w-4" /> Scan
@@ -376,6 +457,11 @@ function Dashboard() {
                         <Badge variant="secondary" className="hidden text-xs sm:inline-flex">
                           <cat.icon className="h-3 w-3" /> {cat.label}
                         </Badge>
+                        {(s.shared_with_count ?? 1) > 1 && (
+                          <Badge variant="outline" className="gap-1 text-[10px]" title={`Split ${s.shared_with_count} ways`}>
+                            <Users className="h-3 w-3" /> /{s.shared_with_count}
+                          </Badge>
+                        )}
                       </div>
                       <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
@@ -388,7 +474,14 @@ function Dashboard() {
                     </div>
                     <div className="flex flex-col items-end gap-0.5">
                       <p className="font-bold tabular-nums">{formatCurrency(Number(s.cost))}</p>
-                      <p className="text-xs text-muted-foreground">/ {s.billing_cycle === "yearly" ? "yr" : s.billing_cycle === "weekly" ? "wk" : "mo"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        / {s.billing_cycle === "yearly" ? "yr" : s.billing_cycle === "weekly" ? "wk" : "mo"}
+                        {(s.shared_with_count ?? 1) > 1 && (
+                          <span className="block text-[10px] text-primary">
+                            you: {formatCurrency(myShare(s))}
+                          </span>
+                        )}
+                      </p>
                     </div>
                   </div>
                   <div className="mt-2 flex items-center justify-end gap-1 sm:mt-1">

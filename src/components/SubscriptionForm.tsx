@@ -10,7 +10,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CATEGORIES, SERVICE_PRESETS, getServicePreset, formatCurrency } from "@/lib/services";
 import { ServiceAvatar } from "@/components/ServiceAvatar";
 import { Switch } from "@/components/ui/switch";
-import { Bell, Crown } from "lucide-react";
+import { Bell, Crown, Users } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 export interface SubscriptionFormValue {
@@ -21,6 +21,7 @@ export interface SubscriptionFormValue {
   category: string;
   alerts_enabled: boolean;
   alert_threshold_pct: number;
+  shared_with_count: number;
 }
 
 interface Props {
@@ -45,6 +46,9 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
   const [thresholdPct, setThresholdPct] = useState<string>(
     initial?.alert_threshold_pct !== undefined ? String(initial.alert_threshold_pct) : "0",
   );
+  const [sharedWith, setSharedWith] = useState<string>(
+    initial?.shared_with_count ? String(initial.shared_with_count) : "1",
+  );
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Auto-detect category from service name
@@ -64,6 +68,7 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
     const parsed = parseFloat(cost);
     if (!name.trim() || isNaN(parsed) || parsed < 0) return;
     const threshold = Math.max(0, parseFloat(thresholdPct) || 0);
+    const seats = Math.max(1, Math.min(50, Math.round(parseFloat(sharedWith) || 1)));
     onSubmit({
       name: name.trim(),
       cost: parsed,
@@ -72,6 +77,7 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
       category,
       alerts_enabled: alertsEnabled,
       alert_threshold_pct: threshold,
+      shared_with_count: seats,
     });
   }
 
@@ -183,6 +189,36 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Family / shared plan */}
+      <div className="space-y-1.5 rounded-xl border border-border bg-muted/30 p-4">
+        <div className="flex items-start gap-2">
+          <Users className="mt-0.5 h-4 w-4 text-primary" />
+          <div className="min-w-0 flex-1">
+            <Label htmlFor="shared" className="text-sm font-semibold">Sharing this plan?</Label>
+            <p className="text-xs text-muted-foreground">
+              Split the cost across people. Only your share counts toward your monthly total.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Input
+            id="shared"
+            type="number"
+            min={1}
+            max={50}
+            step={1}
+            value={sharedWith}
+            onChange={(e) => setSharedWith(e.target.value)}
+            className="w-20"
+          />
+          <span className="text-sm text-muted-foreground">
+            {Number(sharedWith) > 1
+              ? `${formatCurrency((parseFloat(cost) || 0) / Number(sharedWith))} each / ${cycle === "weekly" ? "wk" : cycle === "yearly" ? "yr" : "mo"}`
+              : "Just me"}
+          </span>
+        </div>
       </div>
 
       {showAlerts && (
