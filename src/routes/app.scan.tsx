@@ -68,6 +68,27 @@ function ScanPage() {
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
+  // Existing subs for the price-change correction dropdown.
+  type ExistingSub = { id: string; name: string; cost: number };
+  const [existingSubs, setExistingSubs] = useState<ExistingSub[]>([]);
+
+  // Per-candidate review of detected price changes.
+  // value: subscription id to record against, "__skip__" to skip, or undefined (unset).
+  const [priceMatchOverrides, setPriceMatchOverrides] = useState<Record<string, string>>({});
+  const [recordingPrices, setRecordingPrices] = useState(false);
+  const [pricesRecorded, setPricesRecorded] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    void supabase
+      .from("subscriptions")
+      .select("id,name,cost")
+      .eq("status", "active")
+      .then(({ data }) => {
+        if (data) setExistingSubs(data.map((r) => ({ id: r.id, name: r.name, cost: Number(r.cost) })));
+      });
+  }, [user]);
+
   function reset() {
     setStage("idle");
     setStatusMsg("");
@@ -76,6 +97,8 @@ function ScanPage() {
     setCycleOverrides({});
     setTxnCount(0);
     setError(null);
+    setPriceMatchOverrides({});
+    setPricesRecorded(false);
     if (inputRef.current) inputRef.current.value = "";
   }
 
