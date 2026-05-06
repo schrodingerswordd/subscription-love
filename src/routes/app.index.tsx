@@ -186,6 +186,35 @@ function Dashboard() {
     toast.success(`${s.name} reactivated`);
   }
 
+  function exportCsv() {
+    const headers = ["name", "category", "cost", "billing_cycle", "shared_with_count", "your_share", "monthly_equivalent", "next_billing_date", "status", "cancelled_at", "created_at"];
+    const rows = subs.map((s) => [
+      s.name,
+      s.category,
+      Number(s.cost).toFixed(2),
+      s.billing_cycle,
+      String(s.shared_with_count ?? 1),
+      myShare(s).toFixed(2),
+      toMonthly(myShare(s), s.billing_cycle).toFixed(2),
+      s.next_billing_date,
+      s.status,
+      s.cancelled_at ?? "",
+      s.created_at,
+    ]);
+    const escape = (v: string) => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+    const csv = [headers, ...rows].map((row) => row.map(escape).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `subtrack-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${subs.length} subscription${subs.length === 1 ? "" : "s"}`);
+  }
+
   const visibleSubs = tab === "active" ? activeSubs : cancelledSubs;
 
   return (
