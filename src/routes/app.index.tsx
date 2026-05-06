@@ -148,7 +148,7 @@ function Dashboard() {
       const value = subs
         .filter((s) => new Date(s.created_at) < cutoff)
         .filter((s) => s.status === "active" || (s.cancelled_at && new Date(s.cancelled_at) >= cutoff))
-        .reduce((sum, s) => sum + toMonthly(Number(s.cost), s.billing_cycle), 0);
+        .reduce((sum, s) => sum + toMonthly(myShare(s), s.billing_cycle), 0);
       months.push({ label, value: Math.round(value * 100) / 100 });
     }
     return months;
