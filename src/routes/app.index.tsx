@@ -266,6 +266,34 @@ function Dashboard() {
         </section>
       )}
 
+      {/* Biggest leak insight */}
+      {biggestLeak && (
+        <section className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-4 dark:border-orange-900/40 dark:bg-orange-950/30">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/60 dark:text-orange-300">
+              <Flame className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium uppercase tracking-wider text-orange-700 dark:text-orange-300">
+                Biggest leak this month
+              </p>
+              <div className="mt-0.5 flex items-center gap-2">
+                <ServiceAvatar name={biggestLeak.sub.name} size={20} />
+                <p className="truncate text-sm font-semibold">{biggestLeak.sub.name}</p>
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {formatCurrency(biggestLeak.monthly)}/mo · {Math.round(biggestLeak.share * 100)}% of total
+                </span>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="sm" className="shrink-0">
+              <a href={getCancelLink(biggestLeak.sub.name).url} target="_blank" rel="noopener noreferrer">
+                Cancel
+              </a>
+            </Button>
+          </div>
+        </section>
+      )}
+
       {/* Renewal reminders */}
       {upcomingRenewals.length > 0 && (
         <section className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/30">
