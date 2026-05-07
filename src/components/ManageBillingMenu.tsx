@@ -24,6 +24,19 @@ export function ManageBillingMenu() {
 
   if (!isPremium) return null;
 
+  async function extractMessage(e: unknown): Promise<string> {
+    if (e instanceof Response) {
+      try {
+        const txt = await e.clone().text();
+        try { const j = JSON.parse(txt); return j?.message || j?.error || txt || `HTTP ${e.status}`; }
+        catch { return txt || `HTTP ${e.status}`; }
+      } catch { return `HTTP ${e.status}`; }
+    }
+    if (e instanceof Error) return e.message;
+    if (typeof e === "string") return e;
+    try { return JSON.stringify(e); } catch { return "Unknown error"; }
+  }
+
   async function openPortal() {
     setLoading(true);
     try {
@@ -31,7 +44,8 @@ export function ManageBillingMenu() {
       if (url) window.open(url, "_blank", "noopener");
       else toast.error("No portal URL returned");
     } catch (e) {
-      toast.error((e as Error).message);
+      console.error("openPortal failed", e);
+      toast.error(await extractMessage(e));
     } finally {
       setLoading(false);
     }
@@ -44,7 +58,8 @@ export function ManageBillingMenu() {
       toast.success("Cancelled — you'll keep premium until the end of the billing period");
       refresh();
     } catch (e) {
-      toast.error((e as Error).message);
+      console.error("cancelSubscription failed", e);
+      toast.error(await extractMessage(e));
     } finally {
       setLoading(false);
       setConfirmOpen(false);
