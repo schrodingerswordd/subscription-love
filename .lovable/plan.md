@@ -1,98 +1,65 @@
-# SubTrack — Subscription Tracking Web App
+# Offline support + Accessibility tests
 
-A mobile-first web app for tracking recurring subscriptions, with a fintech-style UI in blues/purples.
+Two independent tracks. Both are sizable; I'll ship them in one pass but keep them isolated.
 
-## Scope & Approach
+## 1. PWA — App shell + cached subscription data
 
-Built with React + TypeScript on TanStack Start, styled with Tailwind, backed by Lovable Cloud (Supabase) for auth and data. Mobile-first responsive design that looks great on phones and scales up to desktop.
+### Heads-up (important)
+- Service workers **do not run in the Lovable editor preview** (iframes + preview hosts auto-unregister them). You'll only see offline behavior on the published `joy-bills.lovable.app` site.
+- Caching is sticky. Misconfigured SW can pin users to a stale build. Mitigations baked into the plan below.
+- Manifest fields like `start_url`/`display` get pinned at PWA install time on iOS/Android.
 
-**Note on PWA:** Full PWA with service workers causes issues in the Lovable preview. I'll add a web app manifest + icons so users can "Add to Home Screen" with a standalone app feel — no offline service worker. This covers the "installable on phones" need without breaking the editor preview.
+### Approach
+- Add `vite-plugin-pwa` with `registerType: "autoUpdate"`, `devOptions.enabled: false`.
+- Workbox config:
+  - `NetworkFirst` for HTML navigations (3s timeout) so deploys propagate.
+  - `StaleWhileRevalidate` for JS/CSS and Google Fonts.
+  - `CacheFirst` for images (avatars, icons).
+  - `navigateFallbackDenylist`: `/~oauth`, `/api/`, `/_serverFn/`.
+- Web manifest (`/manifest.webmanifest`): name, short_name, theme/background colors from design tokens, icons, `display: "standalone"`, `start_url: "/app"`.
+- **Registration guard** in `src/main.tsx`: skip and unregister when in iframe or `*.lovableproject.com` / `id-preview--` host.
+- A small `src/lib/pwa.ts` exposes `registerPWA()` invoked from `main.tsx`.
 
-## Pages & Routes
+### Cached subscription data (read-only offline)
+- New `src/lib/offline-cache.ts` using `idb-keyval` (tiny IndexedDB wrapper).
+- Cache layer in `useSubscription`-adjacent code path:
+  - On successful fetch in `app.index.tsx`, persist `{ subs, savings, fetchedAt }` to IDB keyed by `user.id`.
+  - On mount, hydrate state from IDB immediately (instant render), then refresh from network. If network fails and we have cache → keep showing cached data + show an "Offline — showing last synced data (HH:MM)" badge.
+- Same pattern for `usePriceAlerts` (alerts list).
+- No write queueing — writes still require network and toast an error if offline (`navigator.onLine === false`).
 
-- `/` — Landing page (public)
-- `/login` — Sign in
-- `/signup` — Create account
-- `/app` — Dashboard (protected)
-- `/app/add` — Add subscription (protected)
-- `/app/edit/$id` — Edit subscription (protected)
+### Files
+- New: `src/lib/pwa.ts`, `src/lib/offline-cache.ts`, `src/components/OfflineBadge.tsx`, `public/sw-kill.js` (kept in tree but not used yet).
+- Edited: `vite.config.ts`, `src/main.tsx`, `public/manifest.webmanifest`, `src/routes/app.index.tsx`, `src/hooks/usePriceAlerts.ts`, `src/routes/__root.tsx` (link tags).
 
-## Feature Breakdown
+## 2. Accessibility — checklist + tests
 
-### 1. Landing Page
-- Hero with product name, tagline ("Never get surprised by a subscription charge again"), CTA buttons (Get Started / Log In)
-- 3-up feature grid: Track everything, Visualize spend, Cancel smart
-- "How it works" 3-step section
-- Mock dashboard preview image/illustration
-- Footer
+### Checklist
+- New `docs/accessibility-checklist.md`: focus visible, focus trap on dialogs, Esc closes, labelled controls, semantic headings, color contrast, target ≥44px, reduced motion respected, aria-live for toasts.
 
-### 2. Authentication
-- Email + password sign up and log in via Lovable Cloud
-- Auto-confirm email enabled (no email verification step) for fast testing
-- Session persisted; protected routes redirect to `/login`
-- Logout button in dashboard header
+### Vitest + @testing-library + jest-axe (component-level)
+- Add deps: `vitest`, `@vitest/ui`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, `jsdom`, `jest-axe`, `@types/jest-axe`.
+- `vitest.config.ts` with jsdom + setup file (`src/test/setup.ts`) registering jest-dom + jest-axe matchers.
+- Tests:
+  - `src/test/dialog.a11y.test.tsx` — provider-cancel dialog: renders with no axe violations, focus lands on "Not now" on open, Esc closes, Tab cycles within dialog, action button has aria-label.
+  - `src/test/subscription-form.a11y.test.tsx` — every input has an associated label, required fields have `aria-required`, error messages linked via `aria-describedby`, no axe violations.
 
-### 3. Dashboard (`/app`)
-- **Big total monthly cost** at the top — huge typography, gradient accent, the focal point
-- Secondary stats: yearly projection, # active subscriptions, next upcoming charge
-- **Spending chart** — area/bar chart showing monthly spend over the last 6 months (Recharts)
-- **Subscription list** — each row shows service icon, name, cost, billing cycle badge, next billing date, category tag, edit/delete actions
-- Empty state when no subscriptions yet, with CTA to add first one
-- Floating "+" button on mobile to add new subscription
+### Playwright + @axe-core/playwright (E2E smoke)
+- Add deps: `@playwright/test`, `@axe-core/playwright`.
+- `playwright.config.ts` against `http://localhost:8080` (Vite default), mobile + desktop projects.
+- Tests in `e2e/`:
+  - `e2e/landing.a11y.spec.ts` — load `/`, run axe, expect zero serious/critical violations.
+  - `e2e/login.a11y.spec.ts` — load `/login`, axe scan, tab through inputs, submit reachable via Enter.
+- Note in README that Playwright tests need `bunx playwright install` once.
 
-### 4. Add / Edit Subscription Form
-- Service name (with autocomplete suggestions for common services: Netflix, Spotify, Disney+, YouTube, Apple Music, Amazon Prime, HBO Max, Hulu, Notion, ChatGPT, Adobe, GitHub, etc.)
-- Cost (number input with currency prefix)
-- Billing cycle: weekly / monthly / yearly (segmented control)
-- Next billing date (date picker)
-- Category dropdown: Entertainment, Productivity, Fitness, Music, News, Cloud Storage, Gaming, Other
-- Auto-assigned brand color + icon when service name matches a known brand
-- Save / Cancel; edit screen also has Delete with confirm dialog
+### Scripts
+- `package.json`: `"test": "vitest run"`, `"test:ui": "vitest"`, `"test:e2e": "playwright test"`.
 
-### 5. Service Icons & Branding
-- Curated list of ~20 popular services with their brand color and icon (Lucide icons + custom SVGs for big brands)
-- Fallback: colored circle with first letter for unknown services
+## Out of scope
+- Write queueing / conflict resolution for offline edits.
+- Background sync / push notifications.
+- CI wiring (GitHub Actions) for the new tests.
 
-## Design System
-
-- **Palette:** Deep indigo/violet primary (`oklch` values), soft blue accents, near-white background, dark navy text. Subtle purple gradient on the total cost card and primary buttons.
-- **Typography:** Inter for everything; total cost uses a tight, large display weight
-- **Components:** shadcn/ui (Card, Button, Input, Select, Dialog, Badge, Chart) — already in the project
-- **Mobile:** Bottom-aligned primary actions, large tap targets, sticky header with total, full-width cards
-
-## Data Model (Lovable Cloud)
-
-`subscriptions` table:
-- `id` uuid pk
-- `user_id` uuid → auth.users (RLS: user owns rows)
-- `name` text
-- `cost` numeric
-- `billing_cycle` text (`weekly` | `monthly` | `yearly`)
-- `next_billing_date` date
-- `category` text
-- `created_at` timestamptz
-
-RLS policies: authenticated users can select/insert/update/delete only their own rows.
-
-Monthly normalized cost computed client-side: weekly × 4.33, yearly ÷ 12.
-
-## Build Order
-
-1. Landing page + design tokens (blues/purples palette in `styles.css`)
-2. Auth: signup, login, protected route guard, Lovable Cloud setup
-3. Database schema + RLS for `subscriptions`
-4. Dashboard shell: total cost, list, empty state
-5. Add / Edit / Delete subscription flow with service icon mapping
-6. Spending chart (Recharts)
-7. Web app manifest + icons for "Add to Home Screen"
-8. Mobile polish pass (floating action button, sticky header, tap targets)
-
-## Out of Scope (for now)
-
-- Push notifications / billing reminders (no service worker)
-- Offline mode
-- Bank account integration / auto-detect subscriptions
-- Multi-currency
-- Sharing / household plans
-
-We can add any of these in a follow-up.
+## Risk notes
+- After publishing the PWA, removing it later requires shipping a kill-switch SW (already drafted in `public/sw-kill.js` for future use).
+- Cached subscription data is per-device; clearing site data wipes it. RLS still enforced server-side — IDB is just a local mirror.
