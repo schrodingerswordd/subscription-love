@@ -20,6 +20,7 @@ export function usePriceAlerts() {
   const [loading, setLoading] = useState(true);
   const [tick, setTick] = useState(0);
 
+  // Fetch alerts whenever user changes or a refresh is requested.
   useEffect(() => {
     if (!user) { setAlerts([]); setLoading(false); return; }
     let cancelled = false;
@@ -46,14 +47,23 @@ export function usePriceAlerts() {
       })));
       setLoading(false);
     })();
+    return () => { cancelled = true; };
+  }, [user, tick]);
 
+  // Subscribe to realtime once per user. Cleanup always removes the
+  // channel on unmount or user change so listeners never accumulate.
+  useEffect(() => {
+    if (!user) return;
     const ch = supabase
       .channel(`price_alerts:${user.id}:${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "price_alerts", filter: `user_id=eq.${user.id}` },
-        () => setTick((t) => t + 1))
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "price_alerts", filter: `user_id=eq.${user.id}` },
+        () => setTick((t) => t + 1),
+      )
       .subscribe();
-    return () => { cancelled = true; supabase.removeChannel(ch); };
-  }, [user, tick]);
+    return () => { supabase.removeChannel(ch); };
+  }, [user]);
 
   async function markRead(id: string) {
     await supabase.from("price_alerts").update({ status: "read" }).eq("id", id);
