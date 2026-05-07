@@ -56,13 +56,17 @@ export function useSubscription(): PremiumStatus {
         subscriptionId: data?.paddle_subscription_id ?? null,
       });
     })();
+    return () => { cancelled = true; };
+  }, [user, tick]);
 
+  useEffect(() => {
+    if (!user) return;
     const channel = supabase.channel(`user_subscriptions:${user.id}`);
     channel
       .on("postgres_changes", { event: "*", schema: "public", table: "user_subscriptions", filter: `user_id=eq.${user.id}` },
         () => setTick((t) => t + 1))
       .subscribe();
-    return () => { cancelled = true; supabase.removeChannel(channel); };
+    return () => { supabase.removeChannel(channel); };
   }, [user]);
 
   return { ...state, refresh: () => setTick((t) => t + 1) };
