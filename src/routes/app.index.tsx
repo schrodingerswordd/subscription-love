@@ -646,7 +646,7 @@ function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center justify-end gap-1 sm:mt-1">
+                  <div className="mt-2 flex flex-wrap items-center justify-end gap-1 sm:mt-1">
                     {isCancelled ? (
                       <Button variant="ghost" size="sm" className="h-8 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/40" onClick={() => handleReactivate(s)}>
                         <RotateCcw className="h-3.5 w-3.5" /> Reactivate
