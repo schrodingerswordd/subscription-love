@@ -66,6 +66,8 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [tab, setTab] = useState<"active" | "cancelled">("active");
+  const [realtimeError, setRealtimeError] = useState(false);
+  const [realtimeRetryTick, setRealtimeRetryTick] = useState(0);
   const { upgraded } = Route.useSearch();
 
   useEffect(() => {
@@ -100,13 +102,25 @@ function Dashboard() {
         { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${user.id}` },
         () => { load(); },
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (cancelled) return;
+        if (status === "SUBSCRIBED") {
+          setRealtimeError(false);
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          setRealtimeError(true);
+        }
+      });
 
     return () => {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, realtimeRetryTick]);
+
+  async function handleRealtimeRetry() {
+    setRealtimeError(false);
+    setRealtimeRetryTick((t) => t + 1);
+  }
 
   const activeSubs = useMemo(() => subs.filter((s) => s.status === "active"), [subs]);
   const cancelledSubs = useMemo(() => subs.filter((s) => s.status === "cancelled"), [subs]);
