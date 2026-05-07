@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ScanRouteImport } from './routes/scan'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -24,6 +25,11 @@ import { Route as AppAddRouteImport } from './routes/app.add'
 import { Route as AppEditIdRouteImport } from './routes/app.edit.$id'
 import { Route as ApiPublicHooksSendRenewalRemindersRouteImport } from './routes/api/public/hooks/send-renewal-reminders'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -104,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/app/add': typeof AppAddRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
@@ -119,6 +126,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/app/add': typeof AppAddRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/app/add': typeof AppAddRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/scan'
     | '/signup'
+    | '/terms'
     | '/app/add'
     | '/app/alerts'
     | '/app/debug-icons'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/scan'
     | '/signup'
+    | '/terms'
     | '/app/add'
     | '/app/alerts'
     | '/app/debug-icons'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/scan'
     | '/signup'
+    | '/terms'
     | '/app/add'
     | '/app/alerts'
     | '/app/debug-icons'
@@ -202,11 +214,19 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ScanRoute: typeof ScanRoute
   SignupRoute: typeof SignupRoute
+  TermsRoute: typeof TermsRoute
   ApiPublicHooksSendRenewalRemindersRoute: typeof ApiPublicHooksSendRenewalRemindersRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -336,6 +356,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ScanRoute: ScanRoute,
   SignupRoute: SignupRoute,
+  TermsRoute: TermsRoute,
   ApiPublicHooksSendRenewalRemindersRoute:
     ApiPublicHooksSendRenewalRemindersRoute,
 }
