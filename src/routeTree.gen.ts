@@ -21,6 +21,7 @@ import { Route as AppDebugIconsRouteImport } from './routes/app.debug-icons'
 import { Route as AppAlertsRouteImport } from './routes/app.alerts'
 import { Route as AppAddRouteImport } from './routes/app.add'
 import { Route as AppEditIdRouteImport } from './routes/app.edit.$id'
+import { Route as ApiPublicHooksSendRenewalRemindersRouteImport } from './routes/api/public/hooks/send-renewal-reminders'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -82,6 +83,12 @@ const AppEditIdRoute = AppEditIdRouteImport.update({
   path: '/edit/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicHooksSendRenewalRemindersRoute =
+  ApiPublicHooksSendRenewalRemindersRouteImport.update({
+    id: '/api/public/hooks/send-renewal-reminders',
+    path: '/api/public/hooks/send-renewal-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/app/scan': typeof AppScanRoute
   '/app/': typeof AppIndexRoute
   '/app/edit/$id': typeof AppEditIdRoute
+  '/api/public/hooks/send-renewal-reminders': typeof ApiPublicHooksSendRenewalRemindersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -109,6 +117,7 @@ export interface FileRoutesByTo {
   '/app/scan': typeof AppScanRoute
   '/app': typeof AppIndexRoute
   '/app/edit/$id': typeof AppEditIdRoute
+  '/api/public/hooks/send-renewal-reminders': typeof ApiPublicHooksSendRenewalRemindersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,6 +133,7 @@ export interface FileRoutesById {
   '/app/scan': typeof AppScanRoute
   '/app/': typeof AppIndexRoute
   '/app/edit/$id': typeof AppEditIdRoute
+  '/api/public/hooks/send-renewal-reminders': typeof ApiPublicHooksSendRenewalRemindersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/app/scan'
     | '/app/'
     | '/app/edit/$id'
+    | '/api/public/hooks/send-renewal-reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/app/scan'
     | '/app'
     | '/app/edit/$id'
+    | '/api/public/hooks/send-renewal-reminders'
   id:
     | '__root__'
     | '/'
@@ -167,6 +179,7 @@ export interface FileRouteTypes {
     | '/app/scan'
     | '/app/'
     | '/app/edit/$id'
+    | '/api/public/hooks/send-renewal-reminders'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -176,6 +189,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   ScanRoute: typeof ScanRoute
   SignupRoute: typeof SignupRoute
+  ApiPublicHooksSendRenewalRemindersRoute: typeof ApiPublicHooksSendRenewalRemindersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -264,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEditIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/hooks/send-renewal-reminders': {
+      id: '/api/public/hooks/send-renewal-reminders'
+      path: '/api/public/hooks/send-renewal-reminders'
+      fullPath: '/api/public/hooks/send-renewal-reminders'
+      preLoaderRoute: typeof ApiPublicHooksSendRenewalRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -294,6 +315,8 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   ScanRoute: ScanRoute,
   SignupRoute: SignupRoute,
+  ApiPublicHooksSendRenewalRemindersRoute:
+    ApiPublicHooksSendRenewalRemindersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
