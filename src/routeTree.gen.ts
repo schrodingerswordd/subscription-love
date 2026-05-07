@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ScanRouteImport } from './routes/scan'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
@@ -31,6 +32,11 @@ const SignupRoute = SignupRouteImport.update({
 const ScanRoute = ScanRouteImport.update({
   id: '/scan',
   path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
   '/app/add': typeof AppAddRoute
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/pricing'
+    | '/privacy'
     | '/scan'
     | '/signup'
     | '/app/add'
@@ -156,6 +166,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/pricing'
+    | '/privacy'
     | '/scan'
     | '/signup'
     | '/app/add'
@@ -171,6 +182,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/pricing'
+    | '/privacy'
     | '/scan'
     | '/signup'
     | '/app/add'
@@ -187,6 +199,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
   ScanRoute: typeof ScanRoute
   SignupRoute: typeof SignupRoute
   ApiPublicHooksSendRenewalRemindersRoute: typeof ApiPublicHooksSendRenewalRemindersRoute
@@ -206,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: '/scan'
       fullPath: '/scan'
       preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -313,6 +333,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
   ScanRoute: ScanRoute,
   SignupRoute: SignupRoute,
   ApiPublicHooksSendRenewalRemindersRoute:
