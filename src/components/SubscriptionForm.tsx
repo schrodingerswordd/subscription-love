@@ -117,6 +117,38 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
             </div>
           )}
         </div>
+
+        {/* Popular service picker */}
+        <div className="mt-2">
+          <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Popular services</p>
+          <div className="flex flex-wrap gap-2">
+            {SERVICE_PRESETS.slice(0, 14).map((p: ServicePreset) => {
+              const selected = name.trim().toLowerCase() === p.name.toLowerCase();
+              return (
+                <button
+                  key={p.name}
+                  type="button"
+                  onClick={() => {
+                    setName(p.name);
+                    setCategory(p.category);
+                    if (!cost && p.defaultCost) setCost(String(p.defaultCost));
+                    setShowSuggestions(false);
+                  }}
+                  className={
+                    "flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs transition " +
+                    (selected
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border bg-background hover:border-primary/50 hover:bg-muted")
+                  }
+                  aria-label={`Use ${p.name}`}
+                >
+                  <ServiceAvatar name={p.name} size={20} className="!rounded-md" />
+                  <span className="font-medium">{p.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Cost */}
