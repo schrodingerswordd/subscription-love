@@ -66,7 +66,6 @@ function Dashboard() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [tab, setTab] = useState<"active" | "cancelled">("active");
   const { upgraded } = Route.useSearch();
-  const navigate = Route.useNavigate?.() ?? null;
 
   useEffect(() => {
     if (upgraded) {
