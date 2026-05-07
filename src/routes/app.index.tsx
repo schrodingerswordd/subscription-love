@@ -14,6 +14,7 @@ import {
 import { ServiceAvatar } from "@/components/ServiceAvatar";
 import { QuickAddRow } from "@/components/QuickAddRow";
 import { supabase } from "@/integrations/supabase/client";
+import { createRealtimeChannel, realtimeTopic } from "@/lib/realtime";
 import { useAuth } from "@/lib/auth-context";
 import { formatCurrency, getCategoryMeta, toMonthly } from "@/lib/services";
 import { toast } from "sonner";
