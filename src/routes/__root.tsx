@@ -71,6 +71,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  useEffect(() => {
+    registerPWA();
+  }, []);
   return (
     <ThemeProvider>
       <AuthProvider>
