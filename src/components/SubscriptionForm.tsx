@@ -7,7 +7,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { CATEGORIES, SERVICE_PRESETS, getServicePreset, formatCurrency } from "@/lib/services";
+import { CATEGORIES, SERVICE_PRESETS, getServicePreset, formatCurrency, type ServicePreset } from "@/lib/services";
 import { ServiceAvatar } from "@/components/ServiceAvatar";
 import { Switch } from "@/components/ui/switch";
 import { Bell, Crown, Users } from "lucide-react";
