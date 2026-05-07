@@ -113,7 +113,7 @@ function Dashboard() {
         setSubs(rows);
         setServingCache(false);
         setLastSyncedAt(Date.now());
-        writeCache("subscriptions", user.id, rows);
+        writeCache("subscriptions", user!.id, rows);
       }
       setLoading(false);
     }
