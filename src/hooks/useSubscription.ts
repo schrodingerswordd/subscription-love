@@ -61,7 +61,7 @@ export function useSubscription(): PremiumStatus {
 
   useEffect(() => {
     if (!user) return;
-    const channel = supabase.channel(`user_subscriptions:${user.id}`);
+    const channel = supabase.channel(`user_subscriptions:${user.id}:${Math.random().toString(36).slice(2)}`);
     channel
       .on("postgres_changes", { event: "*", schema: "public", table: "user_subscriptions", filter: `user_id=eq.${user.id}` },
         () => setTick((t) => t + 1))
