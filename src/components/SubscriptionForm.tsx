@@ -63,10 +63,20 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
     ? SERVICE_PRESETS.filter((p) => p.name.toLowerCase().includes(name.toLowerCase())).slice(0, 5)
     : [];
 
+  // Detect a category/service mismatch — only when the typed name matches a known preset exactly.
+  const matchedPreset = (() => {
+    const lower = name.trim().toLowerCase();
+    if (!lower) return undefined;
+    return SERVICE_PRESETS.find((p) => p.name.toLowerCase() === lower);
+  })();
+  const categoryMismatch = !!matchedPreset && matchedPreset.category !== category;
+  const suggestedCategoryMeta = matchedPreset ? CATEGORIES.find((c) => c.value === matchedPreset.category) : undefined;
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const parsed = parseFloat(cost);
     if (!name.trim() || isNaN(parsed) || parsed < 0) return;
+    if (categoryMismatch) return;
     const threshold = Math.max(0, parseFloat(thresholdPct) || 0);
     const seats = Math.max(1, Math.min(50, Math.round(parseFloat(sharedWith) || 1)));
     onSubmit({
@@ -207,7 +217,7 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
       <div className="space-y-1.5">
         <Label htmlFor="category">Category</Label>
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger id="category">
+          <SelectTrigger id="category" aria-invalid={categoryMismatch || undefined} className={categoryMismatch ? "border-destructive focus-visible:ring-destructive" : ""}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -221,6 +231,20 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
             ))}
           </SelectContent>
         </Select>
+        {categoryMismatch && matchedPreset && suggestedCategoryMeta && (
+          <div className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+            <span>
+              <strong>{matchedPreset.name}</strong> is usually <strong>{suggestedCategoryMeta.label}</strong>. Pick that to keep the icon consistent.
+            </span>
+            <button
+              type="button"
+              onClick={() => setCategory(matchedPreset.category)}
+              className="ml-auto rounded-full border border-destructive/40 bg-background px-2 py-0.5 text-[11px] font-semibold text-destructive transition hover:bg-destructive hover:text-destructive-foreground"
+            >
+              Use {suggestedCategoryMeta.label}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Family / shared plan */}
@@ -309,7 +333,7 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
         <Button type="button" variant="outline" onClick={() => navigate({ to: "/app" })} className="flex-1">
           Cancel
         </Button>
-        <Button type="submit" disabled={submitting} className="flex-1 bg-gradient-primary hover:opacity-90">
+        <Button type="submit" disabled={submitting || categoryMismatch} className="flex-1 bg-gradient-primary hover:opacity-90">
           {submitting ? "Saving…" : submitLabel}
         </Button>
       </div>
