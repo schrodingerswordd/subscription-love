@@ -333,7 +333,7 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
         <Button type="button" variant="outline" onClick={() => navigate({ to: "/app" })} className="flex-1">
           Cancel
         </Button>
-        <Button type="submit" disabled={submitting} className="flex-1 bg-gradient-primary hover:opacity-90">
+        <Button type="submit" disabled={submitting || categoryMismatch} className="flex-1 bg-gradient-primary hover:opacity-90">
           {submitting ? "Saving…" : submitLabel}
         </Button>
       </div>
