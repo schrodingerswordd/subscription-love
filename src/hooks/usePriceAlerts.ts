@@ -48,7 +48,7 @@ export function usePriceAlerts() {
     })();
 
     const ch = supabase
-      .channel(`price_alerts:${user.id}`)
+      .channel(`price_alerts:${user.id}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "price_alerts", filter: `user_id=eq.${user.id}` },
         () => setTick((t) => t + 1))
       .subscribe();
