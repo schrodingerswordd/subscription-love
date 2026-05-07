@@ -66,6 +66,7 @@ function Dashboard() {
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [providerCancel, setProviderCancel] = useState<{ name: string; url: string; kind: "official" | "search" } | null>(null);
   const [tab, setTab] = useState<"active" | "cancelled">("active");
   const [realtimeError, setRealtimeError] = useState(false);
   const [realtimeRetryTick, setRealtimeRetryTick] = useState(0);
