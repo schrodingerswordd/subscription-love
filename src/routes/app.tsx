@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Wallet, Crown, Bell } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { ManageBillingMenu } from "@/components/ManageBillingMenu";
+import { SubscriptionStatusBanner } from "@/components/SubscriptionStatusBanner";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app")({
@@ -74,6 +76,7 @@ function AppLayout() {
                 </Link>
               </Button>
             )}
+            <ManageBillingMenu />
             <ThemeToggle />
             <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-muted-foreground">
               <LogOut className="h-4 w-4" />
@@ -82,6 +85,7 @@ function AppLayout() {
           </div>
         </div>
       </header>
+      <SubscriptionStatusBanner />
       <Outlet />
     </div>
   );
