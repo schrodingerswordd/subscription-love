@@ -722,20 +722,40 @@ function Dashboard() {
       </AlertDialog>
 
       <AlertDialog open={!!providerCancel} onOpenChange={(o) => !o && setProviderCancel(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent
+          aria-labelledby="provider-cancel-title"
+          aria-describedby="provider-cancel-desc"
+          onOpenAutoFocus={(e) => {
+            // Default focus to the safe (cancel) action to prevent accidental opens via Enter.
+            e.preventDefault();
+            const el = document.getElementById("provider-cancel-cancel");
+            el?.focus();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+              e.preventDefault();
+              if (providerCancel) window.open(providerCancel.url, "_blank", "noopener,noreferrer");
+              setProviderCancel(null);
+            }
+          }}
+        >
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle id="provider-cancel-title">
               {providerCancel?.kind === "official" ? `Open ${providerCancel?.name}'s cancel page?` : `Search how to cancel ${providerCancel?.name}?`}
             </AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription id="provider-cancel-desc">
               {providerCancel?.kind === "official"
                 ? "We'll open the provider's cancellation page in a new tab. You'll still need to confirm the cancellation there."
                 : "We'll open a web search in a new tab to help you find the cancellation steps."}
+              <span className="mt-2 block text-xs text-muted-foreground">
+                Press Esc to close · {typeof navigator !== "undefined" && /Mac/i.test(navigator.platform) ? "⌘" : "Ctrl"}+Enter to continue
+              </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Not now</AlertDialogCancel>
+            <AlertDialogCancel id="provider-cancel-cancel" aria-label="Don't open the cancellation page">Not now</AlertDialogCancel>
             <AlertDialogAction
+              aria-label={providerCancel?.kind === "official" ? `Open ${providerCancel?.name} cancellation page in new tab` : `Search how to cancel ${providerCancel?.name} in new tab`}
               onClick={() => {
                 if (providerCancel) window.open(providerCancel.url, "_blank", "noopener,noreferrer");
                 setProviderCancel(null);
