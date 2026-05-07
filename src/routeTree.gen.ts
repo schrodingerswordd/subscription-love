@@ -21,6 +21,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppScanRouteImport } from './routes/app.scan'
 import { Route as AppDebugIconsRouteImport } from './routes/app.debug-icons'
+import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppAlertsRouteImport } from './routes/app.alerts'
 import { Route as AppAddRouteImport } from './routes/app.add'
 import { Route as AppEditIdRouteImport } from './routes/app.edit.$id'
@@ -86,6 +87,11 @@ const AppDebugIconsRoute = AppDebugIconsRouteImport.update({
   path: '/debug-icons',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAlertsRoute = AppAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/app/add': typeof AppAddRoute
   '/app/alerts': typeof AppAlertsRoute
+  '/app/billing': typeof AppBillingRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
   '/app/scan': typeof AppScanRoute
   '/app/': typeof AppIndexRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/app/add': typeof AppAddRoute
   '/app/alerts': typeof AppAlertsRoute
+  '/app/billing': typeof AppBillingRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
   '/app/scan': typeof AppScanRoute
   '/app': typeof AppIndexRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/app/add': typeof AppAddRoute
   '/app/alerts': typeof AppAlertsRoute
+  '/app/billing': typeof AppBillingRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
   '/app/scan': typeof AppScanRoute
   '/app/': typeof AppIndexRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/app/add'
     | '/app/alerts'
+    | '/app/billing'
     | '/app/debug-icons'
     | '/app/scan'
     | '/app/'
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/app/add'
     | '/app/alerts'
+    | '/app/billing'
     | '/app/debug-icons'
     | '/app/scan'
     | '/app'
@@ -211,6 +222,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/app/add'
     | '/app/alerts'
+    | '/app/billing'
     | '/app/debug-icons'
     | '/app/scan'
     | '/app/'
@@ -317,6 +329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDebugIconsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/billing': {
+      id: '/app/billing'
+      path: '/billing'
+      fullPath: '/app/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/alerts': {
       id: '/app/alerts'
       path: '/alerts'
@@ -351,6 +370,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAddRoute: typeof AppAddRoute
   AppAlertsRoute: typeof AppAlertsRoute
+  AppBillingRoute: typeof AppBillingRoute
   AppDebugIconsRoute: typeof AppDebugIconsRoute
   AppScanRoute: typeof AppScanRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -360,6 +380,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAddRoute: AppAddRoute,
   AppAlertsRoute: AppAlertsRoute,
+  AppBillingRoute: AppBillingRoute,
   AppDebugIconsRoute: AppDebugIconsRoute,
   AppScanRoute: AppScanRoute,
   AppIndexRoute: AppIndexRoute,

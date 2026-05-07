@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ExternalLink, Settings, Loader2, Ban } from "lucide-react";
+import { ExternalLink, Settings, Loader2, Ban, Receipt } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
@@ -61,6 +62,11 @@ export function ManageBillingMenu() {
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuItem onClick={openPortal} disabled={loading}>
             <ExternalLink className="h-4 w-4" /> Manage billing
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/app/billing">
+              <Receipt className="h-4 w-4" /> Billing history
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
