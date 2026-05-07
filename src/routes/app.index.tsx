@@ -19,6 +19,7 @@ import { formatCurrency, getCategoryMeta, toMonthly } from "@/lib/services";
 import { toast } from "sonner";
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
+  BarChart, Bar, Cell,
 } from "recharts";
 
 interface Subscription {
