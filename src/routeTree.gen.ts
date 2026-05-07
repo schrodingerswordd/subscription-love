@@ -9,8 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ScanRouteImport } from './routes/scan'
+import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
@@ -23,6 +26,11 @@ import { Route as AppAddRouteImport } from './routes/app.add'
 import { Route as AppEditIdRouteImport } from './routes/app.edit.$id'
 import { Route as ApiPublicHooksSendRenewalRemindersRouteImport } from './routes/api/public/hooks/send-renewal-reminders'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -31,6 +39,16 @@ const SignupRoute = SignupRouteImport.update({
 const ScanRoute = ScanRouteImport.update({
   id: '/scan',
   path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundPolicyRoute = RefundPolicyRouteImport.update({
+  id: '/refund-policy',
+  path: '/refund-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -95,8 +113,11 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/app/add': typeof AppAddRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
@@ -109,8 +130,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/app/add': typeof AppAddRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
@@ -125,8 +149,11 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/app/add': typeof AppAddRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
@@ -142,8 +169,11 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/pricing'
+    | '/privacy'
+    | '/refund-policy'
     | '/scan'
     | '/signup'
+    | '/terms'
     | '/app/add'
     | '/app/alerts'
     | '/app/debug-icons'
@@ -156,8 +186,11 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/pricing'
+    | '/privacy'
+    | '/refund-policy'
     | '/scan'
     | '/signup'
+    | '/terms'
     | '/app/add'
     | '/app/alerts'
     | '/app/debug-icons'
@@ -171,8 +204,11 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/pricing'
+    | '/privacy'
+    | '/refund-policy'
     | '/scan'
     | '/signup'
+    | '/terms'
     | '/app/add'
     | '/app/alerts'
     | '/app/debug-icons'
@@ -187,13 +223,23 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
+  RefundPolicyRoute: typeof RefundPolicyRoute
   ScanRoute: typeof ScanRoute
   SignupRoute: typeof SignupRoute
+  TermsRoute: typeof TermsRoute
   ApiPublicHooksSendRenewalRemindersRoute: typeof ApiPublicHooksSendRenewalRemindersRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -206,6 +252,20 @@ declare module '@tanstack/react-router' {
       path: '/scan'
       fullPath: '/scan'
       preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund-policy': {
+      id: '/refund-policy'
+      path: '/refund-policy'
+      fullPath: '/refund-policy'
+      preLoaderRoute: typeof RefundPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -313,8 +373,11 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
+  RefundPolicyRoute: RefundPolicyRoute,
   ScanRoute: ScanRoute,
   SignupRoute: SignupRoute,
+  TermsRoute: TermsRoute,
   ApiPublicHooksSendRenewalRemindersRoute:
     ApiPublicHooksSendRenewalRemindersRoute,
 }
