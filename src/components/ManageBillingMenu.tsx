@@ -63,6 +63,11 @@ export function ManageBillingMenu() {
           <DropdownMenuItem onClick={openPortal} disabled={loading}>
             <ExternalLink className="h-4 w-4" /> Manage billing
           </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/app/billing">
+              <Receipt className="h-4 w-4" /> Billing history
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => setConfirmOpen(true)}
