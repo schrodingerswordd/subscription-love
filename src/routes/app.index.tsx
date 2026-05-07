@@ -171,6 +171,55 @@ function Dashboard() {
     return months;
   }, [subs]);
 
+  // Category breakdown over selected range (in months)
+  const [breakdownRange, setBreakdownRange] = useState<"1" | "3" | "6" | "12">("1");
+  const categoryBreakdown = useMemo(() => {
+    const months = Number(breakdownRange);
+    const now = new Date();
+    const rangeStart = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
+    const totals = new Map<string, number>();
+    for (const s of subs) {
+      const created = new Date(s.created_at);
+      const cancelled = s.cancelled_at ? new Date(s.cancelled_at) : null;
+      // count months within window where the sub was active
+      let activeMonths = 0;
+      for (let i = 0; i < months; i++) {
+        const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+        if (created >= monthEnd) continue;
+        if (cancelled && cancelled < monthStart) continue;
+        activeMonths++;
+      }
+      if (activeMonths === 0) continue;
+      const monthly = toMonthly(myShare(s), s.billing_cycle);
+      const key = s.category || "other";
+      totals.set(key, (totals.get(key) ?? 0) + monthly * activeMonths);
+    }
+    const total = [...totals.values()].reduce((a, b) => a + b, 0);
+    return [...totals.entries()]
+      .map(([category, value]) => {
+        const meta = getCategoryMeta(category);
+        return {
+          category,
+          label: meta.label,
+          value: Math.round(value * 100) / 100,
+          pct: total > 0 ? (value / total) * 100 : 0,
+        };
+      })
+      .sort((a, b) => b.value - a.value);
+  }, [subs, breakdownRange]);
+  const breakdownTotal = useMemo(
+    () => categoryBreakdown.reduce((s, c) => s + c.value, 0),
+    [categoryBreakdown],
+  );
+  // Distinct color per category bar (oklch primary hue ramp)
+  const CATEGORY_COLORS = [
+    "oklch(0.62 0.18 270)", "oklch(0.7 0.16 200)", "oklch(0.72 0.16 150)",
+    "oklch(0.75 0.16 90)", "oklch(0.7 0.18 50)", "oklch(0.65 0.2 20)",
+    "oklch(0.6 0.2 340)", "oklch(0.55 0.18 300)", "oklch(0.7 0.12 230)",
+    "oklch(0.68 0.14 170)", "oklch(0.6 0.05 250)",
+  ];
+
   async function handleDelete(id: string) {
     const { error } = await supabase.from("subscriptions").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
