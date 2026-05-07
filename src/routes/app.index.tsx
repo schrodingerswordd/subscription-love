@@ -720,6 +720,32 @@ function Dashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!providerCancel} onOpenChange={(o) => !o && setProviderCancel(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {providerCancel?.kind === "official" ? `Open ${providerCancel?.name}'s cancel page?` : `Search how to cancel ${providerCancel?.name}?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {providerCancel?.kind === "official"
+                ? "We'll open the provider's cancellation page in a new tab. You'll still need to confirm the cancellation there."
+                : "We'll open a web search in a new tab to help you find the cancellation steps."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Not now</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (providerCancel) window.open(providerCancel.url, "_blank", "noopener,noreferrer");
+                setProviderCancel(null);
+              }}
+            >
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }
