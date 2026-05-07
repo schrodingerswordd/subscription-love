@@ -87,14 +87,32 @@ function Dashboard() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
+
+    // Hydrate from offline cache immediately so the dashboard renders without a network round-trip.
+    readCache<Subscription[]>("subscriptions", user.id).then((cached) => {
+      if (cancelled || !cached) return;
+      setSubs(cached.data);
+      setLastSyncedAt(cached.fetchedAt);
+      setLoading(false);
+    });
+
     async function load() {
       const { data, error } = await supabase
         .from("subscriptions")
         .select("*")
         .order("created_at", { ascending: false });
       if (cancelled) return;
-      if (error) toast.error(error.message);
-      else setSubs((data ?? []) as Subscription[]);
+      if (error) {
+        // Network/db failure — keep cached data on screen if we have any.
+        setServingCache((prev) => prev || subs.length > 0);
+        if (subs.length === 0) toast.error(error.message);
+      } else {
+        const rows = (data ?? []) as Subscription[];
+        setSubs(rows);
+        setServingCache(false);
+        setLastSyncedAt(Date.now());
+        writeCache("subscriptions", user.id, rows);
+      }
       setLoading(false);
     }
     load();
