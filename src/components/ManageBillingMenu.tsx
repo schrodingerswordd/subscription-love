@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ExternalLink, Settings, Loader2, Ban } from "lucide-react";
+import { ExternalLink, Settings, Loader2, Ban, Receipt } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
