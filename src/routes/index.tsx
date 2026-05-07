@@ -46,6 +46,9 @@ function Landing() {
             </div>
           </Link>
           <nav className="flex items-center gap-2">
+            <Link to="/pricing" className="cp-btn-ghost hidden rounded-md px-4 py-2 text-xs sm:inline-block">
+              Pricing
+            </Link>
             {user ? (
               <Link to="/app" className="cp-btn-primary rounded-md px-4 py-2 text-xs">
                 Jack in →
