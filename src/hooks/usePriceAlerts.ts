@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { createRealtimeChannel, realtimeTopic } from "@/lib/realtime";
+import { readCache, writeCache } from "@/lib/offline-cache";
 
 export interface PriceAlert {
   id: string;
@@ -25,17 +26,30 @@ export function usePriceAlerts() {
   useEffect(() => {
     if (!user) { setAlerts([]); setLoading(false); return; }
     let cancelled = false;
+
+    // Hydrate from cache first for instant render.
+    readCache<PriceAlert[]>("price_alerts", user.id).then((cached) => {
+      if (cancelled || !cached) return;
+      setAlerts(cached.data);
+      setLoading(false);
+    });
+
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("price_alerts")
         .select("id,subscription_id,old_cost,new_cost,change_pct,source,status,created_at,subscriptions(name)")
         .neq("status", "dismissed")
         .order("created_at", { ascending: false })
         .limit(50);
       if (cancelled) return;
+      if (error) {
+        // Network failure — keep cached alerts on screen.
+        setLoading(false);
+        return;
+      }
       type Row = Omit<PriceAlert, "subscription_name"> & { subscriptions: { name: string } | null };
       const rows = (data ?? []) as unknown as Row[];
-      setAlerts(rows.map((r) => ({
+      const mapped = rows.map((r) => ({
         id: r.id,
         subscription_id: r.subscription_id,
         old_cost: Number(r.old_cost),
@@ -45,8 +59,10 @@ export function usePriceAlerts() {
         status: r.status,
         created_at: r.created_at,
         subscription_name: r.subscriptions?.name,
-      })));
+      }));
+      setAlerts(mapped);
       setLoading(false);
+      writeCache("price_alerts", user.id, mapped);
     })();
     return () => { cancelled = true; };
   }, [user, tick]);
