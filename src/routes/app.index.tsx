@@ -634,7 +634,7 @@ function Dashboard() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-0.5">
+                    <div className="flex shrink-0 flex-col items-end gap-0.5">
                       <p className="font-bold tabular-nums">{formatCurrency(Number(s.cost))}</p>
                       <p className="text-xs text-muted-foreground">
                         / {s.billing_cycle === "yearly" ? "yr" : s.billing_cycle === "weekly" ? "wk" : "mo"}
