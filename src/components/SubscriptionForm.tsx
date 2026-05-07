@@ -217,7 +217,7 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
       <div className="space-y-1.5">
         <Label htmlFor="category">Category</Label>
         <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger id="category">
+          <SelectTrigger id="category" aria-invalid={categoryMismatch || undefined} className={categoryMismatch ? "border-destructive focus-visible:ring-destructive" : ""}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -231,6 +231,20 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
             ))}
           </SelectContent>
         </Select>
+        {categoryMismatch && matchedPreset && suggestedCategoryMeta && (
+          <div className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+            <span>
+              <strong>{matchedPreset.name}</strong> is usually <strong>{suggestedCategoryMeta.label}</strong>. Pick that to keep the icon consistent.
+            </span>
+            <button
+              type="button"
+              onClick={() => setCategory(matchedPreset.category)}
+              className="ml-auto rounded-full border border-destructive/40 bg-background px-2 py-0.5 text-[11px] font-semibold text-destructive transition hover:bg-destructive hover:text-destructive-foreground"
+            >
+              Use {suggestedCategoryMeta.label}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Family / shared plan */}
