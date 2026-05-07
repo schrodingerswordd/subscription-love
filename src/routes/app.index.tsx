@@ -313,6 +313,17 @@ function Dashboard() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 pt-6 pb-24">
+      {realtimeError && (
+        <div role="alert" className="mb-4 flex flex-col gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-destructive">
+            <p className="font-medium">Live updates paused</p>
+            <p className="text-xs text-destructive/80">We can't reach the realtime service. Your data is still safe — new changes won't appear automatically until reconnected.</p>
+          </div>
+          <Button size="sm" variant="outline" onClick={handleRealtimeRetry} className="self-start sm:self-auto">
+            <RotateCcw className="h-3.5 w-3.5" /> Retry
+          </Button>
+        </div>
+      )}
       {/* Total monthly cost */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-hero p-6 text-primary-foreground shadow-elegant sm:p-8">
         <div className="absolute -right-12 -top-12 h-52 w-52 rounded-full bg-white/10 blur-2xl" />
