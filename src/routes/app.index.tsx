@@ -96,8 +96,7 @@ function Dashboard() {
     }
     load();
 
-    const channel = supabase
-      .channel(`subscriptions:${user.id}:${Math.random().toString(36).slice(2)}`)
+    const channel = createRealtimeChannel(realtimeTopic("subscriptions", user.id))
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${user.id}` },
