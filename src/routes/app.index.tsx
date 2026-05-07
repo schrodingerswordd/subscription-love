@@ -15,6 +15,8 @@ import { ServiceAvatar } from "@/components/ServiceAvatar";
 import { QuickAddRow } from "@/components/QuickAddRow";
 import { supabase } from "@/integrations/supabase/client";
 import { createRealtimeChannel, realtimeTopic } from "@/lib/realtime";
+import { readCache, writeCache } from "@/lib/offline-cache";
+import { OfflineBadge } from "@/components/OfflineBadge";
 import { useAuth } from "@/lib/auth-context";
 import { formatCurrency, getCategoryMeta, toMonthly } from "@/lib/services";
 import { toast } from "sonner";
@@ -65,6 +67,8 @@ function Dashboard() {
   const { alerts: priceAlerts, unreadCount: priceAlertsUnread } = usePriceAlerts();
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null);
+  const [servingCache, setServingCache] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [providerCancel, setProviderCancel] = useState<{ name: string; url: string; kind: "official" | "search" } | null>(null);
   const [tab, setTab] = useState<"active" | "cancelled">("active");
@@ -85,14 +89,32 @@ function Dashboard() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
+
+    // Hydrate from offline cache immediately so the dashboard renders without a network round-trip.
+    readCache<Subscription[]>("subscriptions", user.id).then((cached) => {
+      if (cancelled || !cached) return;
+      setSubs(cached.data);
+      setLastSyncedAt(cached.fetchedAt);
+      setLoading(false);
+    });
+
     async function load() {
       const { data, error } = await supabase
         .from("subscriptions")
         .select("*")
         .order("created_at", { ascending: false });
       if (cancelled) return;
-      if (error) toast.error(error.message);
-      else setSubs((data ?? []) as Subscription[]);
+      if (error) {
+        // Network/db failure — keep cached data on screen if we have any.
+        setServingCache((prev) => prev || subs.length > 0);
+        if (subs.length === 0) toast.error(error.message);
+      } else {
+        const rows = (data ?? []) as Subscription[];
+        setSubs(rows);
+        setServingCache(false);
+        setLastSyncedAt(Date.now());
+        writeCache("subscriptions", user!.id, rows);
+      }
       setLoading(false);
     }
     load();
@@ -314,6 +336,7 @@ function Dashboard() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 pt-6 pb-24">
+      <OfflineBadge lastSyncedAt={lastSyncedAt} servingCache={servingCache} />
       {realtimeError && (
         <div role="alert" className="mb-4 flex flex-col gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="text-destructive">
