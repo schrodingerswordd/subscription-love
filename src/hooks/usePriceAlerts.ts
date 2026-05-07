@@ -55,8 +55,7 @@ export function usePriceAlerts() {
   // channel on unmount or user change so listeners never accumulate.
   useEffect(() => {
     if (!user) return;
-    const ch = supabase
-      .channel(`price_alerts:${user.id}:${Math.random().toString(36).slice(2)}`)
+    const ch = createRealtimeChannel(realtimeTopic("price_alerts", user.id))
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "price_alerts", filter: `user_id=eq.${user.id}` },
