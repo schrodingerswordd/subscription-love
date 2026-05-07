@@ -93,6 +93,30 @@ export type Database = {
           },
         ]
       }
+      reminder_sends: {
+        Row: {
+          billing_date: string
+          id: string
+          sent_at: string
+          subscription_id: string
+          user_id: string
+        }
+        Insert: {
+          billing_date: string
+          id?: string
+          sent_at?: string
+          subscription_id: string
+          user_id: string
+        }
+        Update: {
+          billing_date?: string
+          id?: string
+          sent_at?: string
+          subscription_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           alert_threshold_pct: number
