@@ -82,3 +82,67 @@ export const cancelSubscription = createServerFn({ method: "POST" })
     );
     return { ok: true };
   });
+
+export type BillingHistoryItem = {
+  id: string;
+  invoiceNumber: string | null;
+  status: string;
+  billedAt: string | null;
+  periodStart: string | null;
+  periodEnd: string | null;
+  amount: string;
+  currency: string;
+  invoiceUrl: string | null;
+};
+
+export const getBillingHistory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) => envSchema.parse(i))
+  .handler(async ({ data, context }): Promise<{ items: BillingHistoryItem[] }> => {
+    const { userId } = context;
+    const { data: sub } = await supabaseAdmin
+      .from("user_subscriptions")
+      .select("paddle_customer_id")
+      .eq("user_id", userId)
+      .eq("environment", data.environment)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!sub?.paddle_customer_id) return { items: [] };
+
+    const json = await paddleFetch(
+      data.environment,
+      `/transactions?customer_id=${sub.paddle_customer_id}&per_page=50&order_by=billed_at[DESC]`,
+    );
+    const txs: any[] = json?.data ?? [];
+
+    const items = await Promise.all(
+      txs.map(async (t): Promise<BillingHistoryItem> => {
+        const total = t?.details?.totals?.total ?? "0";
+        const currency = t?.currency_code ?? "USD";
+        const amount = (Number(total) / 100).toFixed(2);
+        let invoiceUrl: string | null = null;
+        if (t?.id && (t.status === "completed" || t.status === "billed" || t.status === "paid")) {
+          try {
+            const inv = await paddleFetch(data.environment, `/transactions/${t.id}/invoice`);
+            invoiceUrl = inv?.data?.url ?? null;
+          } catch {
+            invoiceUrl = null;
+          }
+        }
+        return {
+          id: t.id,
+          invoiceNumber: t.invoice_number ?? null,
+          status: t.status,
+          billedAt: t.billed_at ?? t.created_at ?? null,
+          periodStart: t?.billing_period?.starts_at ?? null,
+          periodEnd: t?.billing_period?.ends_at ?? null,
+          amount,
+          currency,
+          invoiceUrl,
+        };
+      }),
+    );
+
+    return { items };
+  });
