@@ -473,7 +473,64 @@ function Dashboard() {
         </section>
       )}
 
-      {/* List with active/cancelled tabs */}
+      {/* Category breakdown */}
+      {categoryBreakdown.length > 0 && (
+        <section className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-card-soft">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-muted-foreground">Spending by category</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Total {formatCurrency(breakdownTotal)} over the selected range.
+              </p>
+            </div>
+            <Tabs value={breakdownRange} onValueChange={(v) => setBreakdownRange(v as "1" | "3" | "6" | "12")}>
+              <TabsList className="h-8">
+                <TabsTrigger value="1" className="px-2 text-xs">1M</TabsTrigger>
+                <TabsTrigger value="3" className="px-2 text-xs">3M</TabsTrigger>
+                <TabsTrigger value="6" className="px-2 text-xs">6M</TabsTrigger>
+                <TabsTrigger value="12" className="px-2 text-xs">1Y</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          <div className="-mx-2 mt-4 h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={categoryBreakdown} layout="vertical" margin={{ top: 4, right: 12, bottom: 0, left: 4 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
+                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
+                <YAxis type="category" dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} width={92} />
+                <Tooltip
+                  cursor={{ fill: "var(--color-muted)", opacity: 0.4 }}
+                  contentStyle={{
+                    backgroundColor: "var(--color-popover)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 12,
+                    fontSize: 13,
+                  }}
+                  formatter={(value: number, _n, item: any) => [
+                    `${formatCurrency(value)} (${item?.payload?.pct?.toFixed(0) ?? 0}%)`,
+                    "Spend",
+                  ]}
+                />
+                <Bar dataKey="value" radius={[0, 6, 6, 0]}>
+                  {categoryBreakdown.map((_, i) => (
+                    <Cell key={i} fill={CATEGORY_COLORS[i % CATEGORY_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-3">
+            {categoryBreakdown.map((c, i) => (
+              <li key={c.category} className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }} />
+                <span className="truncate text-muted-foreground">{c.label}</span>
+                <span className="ml-auto font-medium tabular-nums">{c.pct.toFixed(0)}%</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section className="mt-6">
         <div className="flex items-center justify-between gap-3">
           <Tabs value={tab} onValueChange={(v) => setTab(v as "active" | "cancelled")}>
