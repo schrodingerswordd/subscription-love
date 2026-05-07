@@ -81,7 +81,7 @@ function Dashboard() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    (async () => {
+    async function load() {
       const { data, error } = await supabase
         .from("subscriptions")
         .select("*")
@@ -90,8 +90,22 @@ function Dashboard() {
       if (error) toast.error(error.message);
       else setSubs((data ?? []) as Subscription[]);
       setLoading(false);
-    })();
-    return () => { cancelled = true; };
+    }
+    load();
+
+    const channel = supabase
+      .channel(`subscriptions:${user.id}:${Math.random().toString(36).slice(2)}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${user.id}` },
+        () => { load(); },
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const activeSubs = useMemo(() => subs.filter((s) => s.status === "active"), [subs]);
