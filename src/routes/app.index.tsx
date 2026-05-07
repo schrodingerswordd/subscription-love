@@ -42,7 +42,12 @@ function myShare(s: { cost: number | string; shared_with_count?: number | null }
 
 const REMINDER_DAYS = 3;
 
+const dashSearchSchema = (s: Record<string, unknown>) => ({
+  upgraded: s.upgraded === "1" || s.upgraded === 1 ? true : undefined,
+});
+
 export const Route = createFileRoute("/app/")({
+  validateSearch: dashSearchSchema,
   head: () => ({
     meta: [
       { title: "Dashboard — SubTrack" },
