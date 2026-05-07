@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { getPaddleEnvironment } from "@/lib/paddle";
+import { createRealtimeChannel, realtimeTopic } from "@/lib/realtime";
 
 export interface PremiumStatus {
   loading: boolean;
@@ -61,7 +62,7 @@ export function useSubscription(): PremiumStatus {
 
   useEffect(() => {
     if (!user) return;
-    const channel = supabase.channel(`user_subscriptions:${user.id}:${Math.random().toString(36).slice(2)}`);
+    const channel = createRealtimeChannel(realtimeTopic("user_subscriptions", user.id));
     channel
       .on("postgres_changes", { event: "*", schema: "public", table: "user_subscriptions", filter: `user_id=eq.${user.id}` },
         () => setTick((t) => t + 1))
