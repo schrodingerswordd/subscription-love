@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { createRealtimeChannel, realtimeTopic } from "@/lib/realtime";
 
 export interface PriceAlert {
   id: string;
