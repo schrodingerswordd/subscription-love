@@ -65,6 +65,18 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [tab, setTab] = useState<"active" | "cancelled">("active");
+  const { upgraded } = Route.useSearch();
+  const navigate = Route.useNavigate?.() ?? null;
+
+  useEffect(() => {
+    if (upgraded) {
+      toast.success("Welcome to Premium! 👑", { description: "Your subscription is active." });
+      // strip the query param
+      const url = new URL(window.location.href);
+      url.searchParams.delete("upgraded");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [upgraded]);
 
   useEffect(() => {
     if (!user) return;
