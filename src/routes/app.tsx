@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Wallet, Crown, Bell } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { ManageBillingMenu } from "@/components/ManageBillingMenu";
+import { SubscriptionStatusBanner } from "@/components/SubscriptionStatusBanner";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app")({
