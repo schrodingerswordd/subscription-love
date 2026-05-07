@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/brevo";
-const SENDER_EMAIL = "no-reply@joy-bills.lovable.app";
+const SENDER_EMAIL = "xoxoanniee@email.cz";
 const SENDER_NAME = "Joy Bills";
 const REMINDER_DAYS = [7, 3, 1];
 
