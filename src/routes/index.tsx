@@ -336,13 +336,18 @@ function Landing() {
       </section>
 
       <footer className="border-t border-[var(--cp-line)]">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-xs uppercase tracking-wider text-[var(--cp-muted)] sm:flex-row sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-6 text-xs uppercase tracking-wider text-[var(--cp-muted)] sm:flex-row sm:px-6">
           <div className="flex items-center gap-2">
             <span className="cp-magenta">●</span>
             <span className="text-[var(--cp-fg)]">SUBTRACK</span>
             <span>// {new Date().getFullYear()} // night city</span>
           </div>
-          <p>built for choombas who count their eddies</p>
+          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <Link to="/pricing" className="hover:text-[var(--cp-fg)]">Pricing</Link>
+            <Link to="/terms" className="hover:text-[var(--cp-fg)]">Terms</Link>
+            <Link to="/privacy" className="hover:text-[var(--cp-fg)]">Privacy</Link>
+            <Link to="/refund-policy" className="hover:text-[var(--cp-fg)]">Refunds</Link>
+          </nav>
         </div>
       </footer>
     </div>
