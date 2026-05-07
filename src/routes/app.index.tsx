@@ -19,6 +19,7 @@ import { formatCurrency, getCategoryMeta, toMonthly } from "@/lib/services";
 import { toast } from "sonner";
 import {
   AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
+  BarChart, Bar, Cell,
 } from "recharts";
 
 interface Subscription {
@@ -169,6 +170,55 @@ function Dashboard() {
     }
     return months;
   }, [subs]);
+
+  // Category breakdown over selected range (in months)
+  const [breakdownRange, setBreakdownRange] = useState<"1" | "3" | "6" | "12">("1");
+  const categoryBreakdown = useMemo(() => {
+    const months = Number(breakdownRange);
+    const now = new Date();
+    const rangeStart = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
+    const totals = new Map<string, number>();
+    for (const s of subs) {
+      const created = new Date(s.created_at);
+      const cancelled = s.cancelled_at ? new Date(s.cancelled_at) : null;
+      // count months within window where the sub was active
+      let activeMonths = 0;
+      for (let i = 0; i < months; i++) {
+        const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+        if (created >= monthEnd) continue;
+        if (cancelled && cancelled < monthStart) continue;
+        activeMonths++;
+      }
+      if (activeMonths === 0) continue;
+      const monthly = toMonthly(myShare(s), s.billing_cycle);
+      const key = s.category || "other";
+      totals.set(key, (totals.get(key) ?? 0) + monthly * activeMonths);
+    }
+    const total = [...totals.values()].reduce((a, b) => a + b, 0);
+    return [...totals.entries()]
+      .map(([category, value]) => {
+        const meta = getCategoryMeta(category);
+        return {
+          category,
+          label: meta.label,
+          value: Math.round(value * 100) / 100,
+          pct: total > 0 ? (value / total) * 100 : 0,
+        };
+      })
+      .sort((a, b) => b.value - a.value);
+  }, [subs, breakdownRange]);
+  const breakdownTotal = useMemo(
+    () => categoryBreakdown.reduce((s, c) => s + c.value, 0),
+    [categoryBreakdown],
+  );
+  // Distinct color per category bar (oklch primary hue ramp)
+  const CATEGORY_COLORS = [
+    "oklch(0.62 0.18 270)", "oklch(0.7 0.16 200)", "oklch(0.72 0.16 150)",
+    "oklch(0.75 0.16 90)", "oklch(0.7 0.18 50)", "oklch(0.65 0.2 20)",
+    "oklch(0.6 0.2 340)", "oklch(0.55 0.18 300)", "oklch(0.7 0.12 230)",
+    "oklch(0.68 0.14 170)", "oklch(0.6 0.05 250)",
+  ];
 
   async function handleDelete(id: string) {
     const { error } = await supabase.from("subscriptions").delete().eq("id", id);
@@ -423,7 +473,64 @@ function Dashboard() {
         </section>
       )}
 
-      {/* List with active/cancelled tabs */}
+      {/* Category breakdown */}
+      {categoryBreakdown.length > 0 && (
+        <section className="mt-6 rounded-2xl border border-border bg-card p-5 shadow-card-soft">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-muted-foreground">Spending by category</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Total {formatCurrency(breakdownTotal)} over the selected range.
+              </p>
+            </div>
+            <Tabs value={breakdownRange} onValueChange={(v) => setBreakdownRange(v as "1" | "3" | "6" | "12")}>
+              <TabsList className="h-8">
+                <TabsTrigger value="1" className="px-2 text-xs">1M</TabsTrigger>
+                <TabsTrigger value="3" className="px-2 text-xs">3M</TabsTrigger>
+                <TabsTrigger value="6" className="px-2 text-xs">6M</TabsTrigger>
+                <TabsTrigger value="12" className="px-2 text-xs">1Y</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          <div className="-mx-2 mt-4 h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={categoryBreakdown} layout="vertical" margin={{ top: 4, right: 12, bottom: 0, left: 4 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
+                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
+                <YAxis type="category" dataKey="label" stroke="var(--color-muted-foreground)" fontSize={12} tickLine={false} axisLine={false} width={92} />
+                <Tooltip
+                  cursor={{ fill: "var(--color-muted)", opacity: 0.4 }}
+                  contentStyle={{
+                    backgroundColor: "var(--color-popover)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 12,
+                    fontSize: 13,
+                  }}
+                  formatter={(value: number, _n, item: any) => [
+                    `${formatCurrency(value)} (${item?.payload?.pct?.toFixed(0) ?? 0}%)`,
+                    "Spend",
+                  ]}
+                />
+                <Bar dataKey="value" radius={[0, 6, 6, 0]}>
+                  {categoryBreakdown.map((_, i) => (
+                    <Cell key={i} fill={CATEGORY_COLORS[i % CATEGORY_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-3">
+            {categoryBreakdown.map((c, i) => (
+              <li key={c.category} className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }} />
+                <span className="truncate text-muted-foreground">{c.label}</span>
+                <span className="ml-auto font-medium tabular-nums">{c.pct.toFixed(0)}%</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section className="mt-6">
         <div className="flex items-center justify-between gap-3">
           <Tabs value={tab} onValueChange={(v) => setTab(v as "active" | "cancelled")}>
