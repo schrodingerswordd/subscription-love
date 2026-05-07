@@ -63,10 +63,20 @@ export function SubscriptionForm({ initial, submitting, onSubmit, submitLabel, s
     ? SERVICE_PRESETS.filter((p) => p.name.toLowerCase().includes(name.toLowerCase())).slice(0, 5)
     : [];
 
+  // Detect a category/service mismatch — only when the typed name matches a known preset exactly.
+  const matchedPreset = (() => {
+    const lower = name.trim().toLowerCase();
+    if (!lower) return undefined;
+    return SERVICE_PRESETS.find((p) => p.name.toLowerCase() === lower);
+  })();
+  const categoryMismatch = !!matchedPreset && matchedPreset.category !== category;
+  const suggestedCategoryMeta = matchedPreset ? CATEGORIES.find((c) => c.value === matchedPreset.category) : undefined;
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const parsed = parseFloat(cost);
     if (!name.trim() || isNaN(parsed) || parsed < 0) return;
+    if (categoryMismatch) return;
     const threshold = Math.max(0, parseFloat(thresholdPct) || 0);
     const seats = Math.max(1, Math.min(50, Math.round(parseFloat(sharedWith) || 1)));
     onSubmit({
