@@ -336,6 +336,7 @@ function Dashboard() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 pt-6 pb-24">
+      <OfflineBadge lastSyncedAt={lastSyncedAt} servingCache={servingCache} />
       {realtimeError && (
         <div role="alert" className="mb-4 flex flex-col gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="text-destructive">
