@@ -616,8 +616,8 @@ function Dashboard() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <p className={"truncate font-semibold " + (isCancelled ? "line-through text-muted-foreground" : "")}>{s.name}</p>
-                        <Badge variant="secondary" className="hidden text-xs sm:inline-flex">
-                          <cat.icon className="h-3 w-3" /> {cat.label}
+                        <Badge variant="secondary" className="hidden max-w-[40%] shrink-0 text-xs sm:inline-flex">
+                          <cat.icon className="h-3 w-3" /> <span className="truncate">{cat.label}</span>
                         </Badge>
                         {(s.shared_with_count ?? 1) > 1 && (
                           <Badge variant="outline" className="gap-1 text-[10px]" title={`Split ${s.shared_with_count} ways`}>
