@@ -658,16 +658,14 @@ function Dashboard() {
                           const link = getCancelLink(s.name);
                           return (
                             <Button
-                              asChild
                               variant="ghost"
                               size="sm"
                               className="h-8 text-muted-foreground hover:text-primary"
                               title={link.kind === "official" ? "Open provider's cancel page" : "Search how to cancel"}
+                              onClick={() => setProviderCancel({ name: s.name, url: link.url, kind: link.kind })}
                             >
-                              <a href={link.url} target="_blank" rel="noopener noreferrer">
-                                <ExternalLink className="h-3.5 w-3.5" />
-                                {link.kind === "official" ? "Cancel at provider" : "How to cancel"}
-                              </a>
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              {link.kind === "official" ? "Cancel at provider" : "How to cancel"}
                             </Button>
                           );
                         })()}
