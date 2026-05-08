@@ -3,9 +3,10 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Wallet } from "lucide-react";
+import { Loader2, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { loginSchema } from "@/lib/auth-schemas";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
@@ -18,11 +19,14 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
+type FieldErrors = Partial<Record<"email" | "password", string>>;
+
 function LoginPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -31,8 +35,19 @@ function LoginPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    const parsed = loginSchema.safeParse({ email, password });
+    if (!parsed.success) {
+      const fieldErrors: FieldErrors = {};
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0] as keyof FieldErrors;
+        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+      }
+      setErrors(fieldErrors);
+      return;
+    }
+    setErrors({});
     setSubmitting(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword(parsed.data);
     setSubmitting(false);
     if (error) {
       toast.error(error.message);
@@ -58,7 +73,7 @@ function LoginPage() {
           <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
           <p className="mt-1 text-sm text-muted-foreground">Log in to your SubTrack account.</p>
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -69,7 +84,15 @@ function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
+                disabled={submitting}
               />
+              {errors.email && (
+                <p id="email-error" role="alert" className="text-xs text-destructive">
+                  {errors.email}
+                </p>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="password">Password</Label>
@@ -78,13 +101,31 @@ function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
-                minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                aria-invalid={!!errors.password}
+                aria-describedby={errors.password ? "password-error" : undefined}
+                disabled={submitting}
               />
+              {errors.password && (
+                <p id="password-error" role="alert" className="text-xs text-destructive">
+                  {errors.password}
+                </p>
+              )}
             </div>
-            <Button type="submit" disabled={submitting} className="w-full bg-gradient-primary hover:opacity-90">
-              {submitting ? "Signing in…" : "Sign in"}
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-gradient-primary hover:opacity-90"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Signing in…
+                </>
+              ) : (
+                "Sign in"
+              )}
             </Button>
           </form>
 
