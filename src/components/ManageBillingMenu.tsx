@@ -11,13 +11,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useServerFn } from "@tanstack/react-start";
 import { createPortalSession, cancelSubscription } from "@/server/billing.functions";
+import { createStripePortalSession } from "@/server/stripe.functions";
 import { useSubscription } from "@/hooks/useSubscription";
 import { getPaddleEnvironment } from "@/lib/paddle";
 import { toast } from "sonner";
 
 export function ManageBillingMenu() {
-  const { isPremium, cancelAtPeriodEnd, refresh } = useSubscription();
-  const portal = useServerFn(createPortalSession);
+  const { isPremium, cancelAtPeriodEnd, refresh, subscriptionId } = useSubscription();
+  const paddlePortal = useServerFn(createPortalSession);
+  const stripePortal = useServerFn(createStripePortalSession);
   const cancel = useServerFn(cancelSubscription);
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -40,9 +42,15 @@ export function ManageBillingMenu() {
   async function openPortal() {
     setLoading(true);
     try {
-      const { url } = await portal({ data: { environment: getPaddleEnvironment() } });
-      if (url) window.open(url, "_blank", "noopener");
-      else toast.error("No portal URL returned");
+      if (subscriptionId?.startsWith("sub_")) {
+        const { url } = await stripePortal();
+        if (url) window.open(url, "_blank", "noopener");
+        else toast.error("No portal URL returned");
+      } else {
+        const { url } = await paddlePortal({ data: { environment: getPaddleEnvironment() } });
+        if (url) window.open(url, "_blank", "noopener");
+        else toast.error("No portal URL returned");
+      }
     } catch (e) {
       console.error("openPortal failed", e);
       toast.error(await extractMessage(e));
