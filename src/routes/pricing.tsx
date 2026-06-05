@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Check, Crown, ScanLine, Bell, Infinity as InfinityIcon, ArrowLeft, Loader2 } from "lucide-react";
+import { Check, Crown, ScanLine, Bell, Infinity as InfinityIcon, ArrowLeft, Loader2, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useSubscription } from "@/hooks/useSubscription";
-import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { toast } from "sonner";
 
@@ -21,7 +21,7 @@ function PricingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { isPremium, loading } = useSubscription();
-  const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
+  const { openCheckout, loading: checkoutLoading } = useStripeCheckout();
 
   async function handleUpgrade() {
     if (!user) {
@@ -30,9 +30,7 @@ function PricingPage() {
     }
     try {
       await openCheckout({
-        priceId: "premium_monthly",
-        userId: user.id,
-        customerEmail: user.email,
+        priceId: "price_1P2mF72N3L7k0G7v12345678", // Placeholder Stripe Price ID
       });
     } catch (e) {
       toast.error((e as Error).message ?? "Could not open checkout");
@@ -84,11 +82,12 @@ function PricingPage() {
             </span>
             <h2 className="text-lg font-semibold">Premium</h2>
             <p className="mt-1 text-sm text-muted-foreground">Everything, no limits.</p>
-            <p className="mt-5 text-4xl font-bold">$2.99<span className="text-base font-normal text-muted-foreground">/mo</span></p>
+            <p className="mt-5 text-4xl font-bold">$19.99<span className="text-base font-normal text-muted-foreground">/mo</span></p>
             <ul className="mt-6 space-y-3 text-sm">
               <Feature highlight><InfinityIcon className="h-4 w-4" /> Unlimited subscriptions</Feature>
               <Feature highlight><ScanLine className="h-4 w-4" /> Bank statement scanner</Feature>
               <Feature highlight><Bell className="h-4 w-4" /> Price-change alerts</Feature>
+              <Feature highlight><Package className="h-4 w-4" /> Priority Vault access</Feature>
               <Feature>Everything in Free</Feature>
             </ul>
             {isPremium ? (
@@ -102,7 +101,7 @@ function PricingPage() {
                 className="mt-6 w-full bg-gradient-primary hover:opacity-90"
               >
                 {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Crown className="h-4 w-4" />}
-                Upgrade for $2.99/mo
+                Upgrade for $19.99/mo
               </Button>
             )}
             <p className="mt-3 text-center text-xs text-muted-foreground">Cancel anytime. No tricks.</p>
@@ -110,7 +109,7 @@ function PricingPage() {
         </div>
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          Payments handled securely by Paddle. Lovable Cloud-powered.
+          Payments handled securely by Stripe. Global compliance.
         </p>
       </main>
     </div>
