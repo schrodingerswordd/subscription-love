@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TestSupabaseRouteImport } from './routes/test-supabase'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ScanRouteImport } from './routes/scan'
@@ -19,6 +20,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppVaultRouteImport } from './routes/app.vault'
 import { Route as AppScanRouteImport } from './routes/app.scan'
 import { Route as AppDebugIconsRouteImport } from './routes/app.debug-icons'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
@@ -27,6 +29,11 @@ import { Route as AppAddRouteImport } from './routes/app.add'
 import { Route as AppEditIdRouteImport } from './routes/app.edit.$id'
 import { Route as ApiPublicHooksSendRenewalRemindersRouteImport } from './routes/api/public/hooks/send-renewal-reminders'
 
+const TestSupabaseRoute = TestSupabaseRouteImport.update({
+  id: '/test-supabase',
+  path: '/test-supabase',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -77,6 +84,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppVaultRoute = AppVaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppScanRoute = AppScanRouteImport.update({
   id: '/scan',
   path: '/scan',
@@ -124,11 +136,13 @@ export interface FileRoutesByFullPath {
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/test-supabase': typeof TestSupabaseRoute
   '/app/add': typeof AppAddRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/billing': typeof AppBillingRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
   '/app/scan': typeof AppScanRoute
+  '/app/vault': typeof AppVaultRoute
   '/app/': typeof AppIndexRoute
   '/app/edit/$id': typeof AppEditIdRoute
   '/api/public/hooks/send-renewal-reminders': typeof ApiPublicHooksSendRenewalRemindersRoute
@@ -142,11 +156,13 @@ export interface FileRoutesByTo {
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/test-supabase': typeof TestSupabaseRoute
   '/app/add': typeof AppAddRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/billing': typeof AppBillingRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
   '/app/scan': typeof AppScanRoute
+  '/app/vault': typeof AppVaultRoute
   '/app': typeof AppIndexRoute
   '/app/edit/$id': typeof AppEditIdRoute
   '/api/public/hooks/send-renewal-reminders': typeof ApiPublicHooksSendRenewalRemindersRoute
@@ -162,11 +178,13 @@ export interface FileRoutesById {
   '/scan': typeof ScanRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/test-supabase': typeof TestSupabaseRoute
   '/app/add': typeof AppAddRoute
   '/app/alerts': typeof AppAlertsRoute
   '/app/billing': typeof AppBillingRoute
   '/app/debug-icons': typeof AppDebugIconsRoute
   '/app/scan': typeof AppScanRoute
+  '/app/vault': typeof AppVaultRoute
   '/app/': typeof AppIndexRoute
   '/app/edit/$id': typeof AppEditIdRoute
   '/api/public/hooks/send-renewal-reminders': typeof ApiPublicHooksSendRenewalRemindersRoute
@@ -183,11 +201,13 @@ export interface FileRouteTypes {
     | '/scan'
     | '/signup'
     | '/terms'
+    | '/test-supabase'
     | '/app/add'
     | '/app/alerts'
     | '/app/billing'
     | '/app/debug-icons'
     | '/app/scan'
+    | '/app/vault'
     | '/app/'
     | '/app/edit/$id'
     | '/api/public/hooks/send-renewal-reminders'
@@ -201,11 +221,13 @@ export interface FileRouteTypes {
     | '/scan'
     | '/signup'
     | '/terms'
+    | '/test-supabase'
     | '/app/add'
     | '/app/alerts'
     | '/app/billing'
     | '/app/debug-icons'
     | '/app/scan'
+    | '/app/vault'
     | '/app'
     | '/app/edit/$id'
     | '/api/public/hooks/send-renewal-reminders'
@@ -220,11 +242,13 @@ export interface FileRouteTypes {
     | '/scan'
     | '/signup'
     | '/terms'
+    | '/test-supabase'
     | '/app/add'
     | '/app/alerts'
     | '/app/billing'
     | '/app/debug-icons'
     | '/app/scan'
+    | '/app/vault'
     | '/app/'
     | '/app/edit/$id'
     | '/api/public/hooks/send-renewal-reminders'
@@ -240,11 +264,19 @@ export interface RootRouteChildren {
   ScanRoute: typeof ScanRoute
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
+  TestSupabaseRoute: typeof TestSupabaseRoute
   ApiPublicHooksSendRenewalRemindersRoute: typeof ApiPublicHooksSendRenewalRemindersRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/test-supabase': {
+      id: '/test-supabase'
+      path: '/test-supabase'
+      fullPath: '/test-supabase'
+      preLoaderRoute: typeof TestSupabaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -315,6 +347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/vault': {
+      id: '/app/vault'
+      path: '/vault'
+      fullPath: '/app/vault'
+      preLoaderRoute: typeof AppVaultRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/scan': {
       id: '/app/scan'
       path: '/scan'
@@ -373,6 +412,7 @@ interface AppRouteChildren {
   AppBillingRoute: typeof AppBillingRoute
   AppDebugIconsRoute: typeof AppDebugIconsRoute
   AppScanRoute: typeof AppScanRoute
+  AppVaultRoute: typeof AppVaultRoute
   AppIndexRoute: typeof AppIndexRoute
   AppEditIdRoute: typeof AppEditIdRoute
 }
@@ -383,6 +423,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBillingRoute: AppBillingRoute,
   AppDebugIconsRoute: AppDebugIconsRoute,
   AppScanRoute: AppScanRoute,
+  AppVaultRoute: AppVaultRoute,
   AppIndexRoute: AppIndexRoute,
   AppEditIdRoute: AppEditIdRoute,
 }
@@ -399,9 +440,19 @@ const rootRouteChildren: RootRouteChildren = {
   ScanRoute: ScanRoute,
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
+  TestSupabaseRoute: TestSupabaseRoute,
   ApiPublicHooksSendRenewalRemindersRoute:
     ApiPublicHooksSendRenewalRemindersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

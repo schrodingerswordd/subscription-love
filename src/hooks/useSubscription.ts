@@ -41,20 +41,22 @@ export function useSubscription(): PremiumStatus {
       const env = getPaddleEnvironment();
       const { data } = await supabase
         .from("user_subscriptions")
-        .select("status,current_period_end,cancel_at_period_end,paddle_subscription_id")
+        .select("status,current_period_end,cancel_at_period_end,paddle_subscription_id,stripe_subscription_id")
         .eq("user_id", user.id)
         .eq("environment", env)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
+
       if (cancelled) return;
+
       setState({
         loading: false,
         isPremium: isAccessActive(data),
         status: data?.status ?? null,
         cancelAtPeriodEnd: data?.cancel_at_period_end ?? false,
         currentPeriodEnd: data?.current_period_end ?? null,
-        subscriptionId: data?.paddle_subscription_id ?? null,
+        subscriptionId: data?.stripe_subscription_id || data?.paddle_subscription_id || null,
       });
     })();
     return () => { cancelled = true; };

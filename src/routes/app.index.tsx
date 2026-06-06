@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Pencil, Trash2, Calendar, Sparkles, Bell, Ban, RotateCcw, PiggyBank, ScanLine, Crown, TrendingUp, ExternalLink, Flame, Download, Users } from "lucide-react";
+import { Plus, Pencil, Trash2, Calendar, Sparkles, Bell, Ban, RotateCcw, PiggyBank, ScanLine, Crown, TrendingUp, ExternalLink, Flame, Download, Users, HardDrive } from "lucide-react";
 import { getCancelLink } from "@/lib/cancel-links";
 import { useSubscription, FREE_SUBSCRIPTION_LIMIT } from "@/hooks/useSubscription";
 import { usePriceAlerts } from "@/hooks/usePriceAlerts";
@@ -472,6 +472,26 @@ function Dashboard() {
             </div>
             <Button asChild size="sm" variant="outline" className="shrink-0">
               <Link to="/app/alerts">Review</Link>
+            </Button>
+          </div>
+        </section>
+      )}
+
+      {/* Vault banner (Premium) */}
+      {isPremium && (
+        <section className="mt-4 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <HardDrive className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold">Physical Archives & Gear</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Secure your knowledge with physical editions and hardened survival gear.
+              </p>
+            </div>
+            <Button asChild size="sm" variant="outline" className="shrink-0">
+              <Link to="/app/vault">Enter Vault</Link>
             </Button>
           </div>
         </section>

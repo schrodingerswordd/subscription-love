@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePriceAlerts } from "@/hooks/usePriceAlerts";
 import { Button } from "@/components/ui/button";
-import { LogOut, Wallet, Crown, Bell } from "lucide-react";
+import { LogOut, Wallet, Crown, Bell, HardDrive } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { ManageBillingMenu } from "@/components/ManageBillingMenu";
@@ -57,7 +57,14 @@ function AppLayout() {
           </Link>
           <div className="flex items-center gap-1">
             {isPremium && (
-              <Button asChild variant="ghost" size="sm" className="relative text-muted-foreground hover:text-foreground" aria-label="Price alerts">
+              <>
+                <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" aria-label="Knowledge Vault">
+                  <Link to="/app/vault">
+                    <HardDrive className="h-4 w-4" />
+                    <span className="ml-1.5 hidden lg:inline">Vault</span>
+                  </Link>
+                </Button>
+                <Button asChild variant="ghost" size="sm" className="relative text-muted-foreground hover:text-foreground" aria-label="Price alerts">
                 <Link to="/app/alerts">
                   <Bell className="h-4 w-4" />
                   {unreadCount > 0 && (
@@ -67,8 +74,9 @@ function AppLayout() {
                   )}
                 </Link>
               </Button>
-            )}
-            {!isPremium && (
+            </>
+          )}
+          {!isPremium && (
               <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary">
                 <Link to="/pricing">
                   <Crown className="h-4 w-4" />
