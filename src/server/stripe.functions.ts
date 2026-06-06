@@ -26,7 +26,7 @@ export const createStripeCheckoutSession = createServerFn({ method: "POST" })
     const { data: user, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
     if (userError || !user.user) throw new Error("User not found");
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionOptions: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ["card"],
       line_items: [
         {
@@ -41,7 +41,18 @@ export const createStripeCheckoutSession = createServerFn({ method: "POST" })
       metadata: {
         userId,
       },
-    });
+    };
+
+    if (mode === "payment") {
+      sessionOptions.shipping_address_collection = {
+        allowed_countries: ["US", "CA", "GB", "AU", "DE", "FR", "IT", "ES", "NL", "BE", "SE", "NO", "DK"],
+      };
+      sessionOptions.phone_number_collection = {
+        enabled: true,
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionOptions);
 
     return { url: session.url };
   });
