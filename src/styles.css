@@ -297,3 +297,73 @@
   background: linear-gradient(90deg, transparent, var(--cp-magenta), var(--cp-cyan), transparent);
   opacity: 0.6;
 }
+
+.bunker {
+  --radius: 0px;
+  --background: #0a0a0a;
+  --foreground: #e0e0e0;
+  --card: #121212;
+  --card-foreground: #e0e0e0;
+  --popover: #121212;
+  --popover-foreground: #e0e0e0;
+  --primary: #FF8C00; /* Hazard Orange */
+  --primary-foreground: #0a0a0a;
+  --primary-glow: rgba(255, 140, 0, 0.4);
+  --secondary: #1a1a1a;
+  --secondary-foreground: #e0e0e0;
+  --muted: #1a1a1a;
+  --muted-foreground: #808080;
+  --accent: #FF8C00;
+  --accent-foreground: #0a0a0a;
+  --destructive: #cc3300;
+  --destructive-foreground: #e0e0e0;
+  --border: #222222;
+  --input: #121212;
+  --ring: #FF8C00;
+}
+
+.bunker-green {
+  --primary: #00FF41; /* Tactical Green */
+  --ring: #00FF41;
+  --primary-glow: rgba(0, 255, 65, 0.4);
+}
+
+.bunker-amber {
+  --primary: #FFB000; /* Amber Gold */
+  --ring: #FFB000;
+  --primary-glow: rgba(255, 176, 0, 0.4);
+}
+
+.bunker-blue {
+  --primary: #00E5FF; /* Icy Blue */
+  --ring: #00E5FF;
+  --primary-glow: rgba(0, 229, 255, 0.4);
+}
+
+/* Modern Bunker Global Effects */
+.bunker-scanlines {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 1px,
+    rgba(0, 0, 0, 0.1) 1px,
+    rgba(0, 0, 0, 0.1) 2px
+  );
+  pointer-events: none;
+  z-index: 50;
+}
+
+.bunker-glow {
+  text-shadow: 0 0 10px var(--primary-glow);
+}
+
+.bunker-border-glow {
+  box-shadow: 0 0 15px var(--primary-glow);
+  border: 1px solid var(--primary);
+}
+
+.bunker-noise {
+  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+  opacity: 0.05;
+  pointer-events: none;
+}
