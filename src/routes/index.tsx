@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Box, Shield, Terminal } from "lucide-react";
+import { usePublicStripeCheckout } from "@/hooks/useStripeCheckout";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -12,6 +13,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const { openCheckout, loading } = usePublicStripeCheckout();
+
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#F5F5F5] font-sans selection:bg-[#FF8C00] selection:text-[#121212]">
       {/* GLOBAL HEADER */}
@@ -139,12 +142,21 @@ function Landing() {
               </div>
 
               <div className="mt-12">
-                <Link
-                  to="/signup"
-                  className="inline-flex w-full md:w-auto items-center justify-center bg-transparent border border-[#F5F5F5] px-8 py-4 text-sm font-bold uppercase tracking-widest text-[#F5F5F5] hover:border-[#FF8C00] hover:text-[#FF8C00] transition-colors"
+                <button
+                  onClick={() => openCheckout({
+                    priceData: {
+                      currency: "usd",
+                      product_data: { name: "Archive Access" },
+                      unit_amount: 1999,
+                      recurring: { interval: "month" },
+                    },
+                    mode: "subscription"
+                  })}
+                  disabled={loading}
+                  className="inline-flex w-full md:w-auto items-center justify-center bg-transparent border border-[#F5F5F5] px-8 py-4 text-sm font-bold uppercase tracking-widest text-[#F5F5F5] hover:border-[#FF8C00] hover:text-[#FF8C00] transition-colors disabled:opacity-50"
                 >
                   Initiate Subscription
-                </Link>
+                </button>
               </div>
             </div>
           </div>
@@ -208,7 +220,16 @@ function Landing() {
 
             <div className="mt-12">
               <button
-                className="inline-flex w-full sm:w-auto items-center justify-center bg-[#121212] border border-[#333] px-10 py-4 text-sm font-bold uppercase tracking-widest text-[#FF8C00] hover:bg-[#FF8C00] hover:text-[#121212] hover:border-[#FF8C00] transition-all"
+                onClick={() => openCheckout({
+                  priceData: {
+                    currency: "usd",
+                    product_data: { name: "The Foundation Crate" },
+                    unit_amount: 34900,
+                  },
+                  mode: "payment"
+                })}
+                disabled={loading}
+                className="inline-flex w-full sm:w-auto items-center justify-center bg-[#121212] border border-[#333] px-10 py-4 text-sm font-bold uppercase tracking-widest text-[#FF8C00] hover:bg-[#FF8C00] hover:text-[#121212] hover:border-[#FF8C00] transition-all disabled:opacity-50"
               >
                 Requisition Crate
               </button>
